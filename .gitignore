@@ -1,0 +1,27 @@
+# dependencies
+/node_modules
+
+# next.js
+/.next/
+/out/
+next-env.d.ts
+*.tsbuildinfo
+
+# misc
+.DS_Store
+*.pem
+npm-debug.log*
+.env*.local
+.vercel
+
+# Local tool folders: Claude Code settings, Impeccable's critique snapshots
+/.claude/
+/.impeccable/
+
+# Kept on disk, never pushed (Cody, 2026-10-15): retired code, the v26 design
+# handoff, and the build sessions' plans, specs and artifacts, whose decisions
+# live in docs/DESIGN.md and PRODUCT.md
+/archive/
+
+# Raw content exports from other projects; never published
+/content-inbox/

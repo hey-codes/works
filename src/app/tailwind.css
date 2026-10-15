@@ -1,0 +1,173 @@
+/* Tailwind exists in this project for one thing: the map (mapcn). Only the
+   theme and utilities layers load. The preflight reset is left out on purpose
+   so globals.css and atlas.module.css keep rendering as written. */
+@layer theme, base, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+/* dark: follows the site's own rule: an explicit data-theme, else the system. */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme="light"]), :root:not([data-theme="light"]) *) {
+      @slot;
+    }
+  }
+}
+
+/* shadcn's color names, pointed at the site tokens so mapcn's popups and
+   controls take the site palette in both themes. */
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--ink);
+  --color-popover: var(--bg);
+  --color-popover-foreground: var(--ink);
+  --color-muted-foreground: var(--muted);
+  --color-border: var(--line);
+  --color-accent: var(--ground);
+  --color-muted: var(--ground);
+  --color-ring: var(--blue);
+}
+
+/* The part of preflight mapcn relies on, kept inside the map. */
+@layer base {
+  .map-scope,
+  .map-scope *,
+  .map-scope ::before,
+  .map-scope ::after {
+    box-sizing: border-box;
+    border: 0 solid var(--line);
+  }
+
+  .map-scope button {
+    margin: 0;
+    padding: 0;
+    background: none;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .map-scope p,
+  .map-scope dl,
+  .map-scope dd {
+    margin: 0;
+  }
+}
+
+/* The frame is a size container, so a popup can be capped against its height. */
+.map-scope {
+  container-type: size;
+}
+
+/* Above the controls: the popup is what the reader just asked for. */
+.map-scope .maplibregl-popup {
+  z-index: 20;
+}
+
+/* One focus ring on the map's buttons: the site's blue, drawn inside the
+   button so the control group's clipping cannot cut it, and the button keeps
+   its own corners (the site-wide rule rounds focus to 2px). */
+.map-scope button:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: -2px;
+  border-radius: revert-layer;
+  box-shadow: none;
+}
+
+/* The canvas's focus ring, drawn inside it: .map's overflow: hidden clips a
+   ring drawn outside. Rounded to the frame's inner corner (its radius less
+   its 1px border), so the corners show too. */
+.map-scope .maplibregl-canvas:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: -2px;
+  border-radius: calc(var(--radius-map) - 1px);
+}
+
+/* MapLibre's stock popup is a white padded box with a drop shadow and an
+   arrow. mapcn draws its own box inside it, so the stock one is cleared. */
+.map-scope .maplibregl-popup-content {
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.map-scope .maplibregl-popup-tip {
+  display: none;
+}
+
+/* The hint MapLibre shows on a plain scroll or a one finger drag: a small
+   label in the site's metadata style in place of the dark scrim, held for a
+   moment and gone without a fade. */
+.map-scope .maplibregl-cooperative-gesture-screen {
+  background: none;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  transition: opacity 0s 1.5s;
+}
+
+.map-scope .maplibregl-cooperative-gesture-screen.maplibregl-show {
+  transition: none;
+}
+
+.map-scope .maplibregl-cooperative-gesture-screen > div {
+  padding: 4px 8px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+/* CARTO and OpenStreetMap credit, in the site's metadata style. The doubled
+   class outranks MapLibre's own compact rule (a white pill). */
+.map-scope .maplibregl-ctrl.maplibregl-ctrl-attrib {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+.map-scope .maplibregl-ctrl-attrib a {
+  color: var(--muted);
+}
+
+/* MapLibre's toggle is a black glyph on a white disc. */
+.map-scope .maplibregl-ctrl-attrib-button {
+  background-color: transparent;
+  @apply dark:invert;
+}
+
+/* A card's brand line, "BALENCIAGA · 2022-2023". Where it must wrap it wraps
+   between the brand and the years, never inside either. The dot leads the
+   years as a ::before, and every part carries one, so the row is pulled left
+   by one dot's width and its clipping parent (overflow: hidden) hides the dot
+   of whichever part starts a line: no line ends or starts on the dot. The
+   label face is mono, so the dot's room is three characters and their
+   tracking. */
+.map-scope .brand-line {
+  --sep: calc(3ch + 0.24em);
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: calc(-1 * var(--sep));
+}
+
+.map-scope .brand-line > span {
+  white-space: nowrap;
+}
+
+.map-scope .brand-line > span::before {
+  content: "";
+  display: inline-block;
+  width: var(--sep);
+}
+
+.map-scope .brand-line > .brand-years::before {
+  content: "\00B7";
+  text-align: center;
+}

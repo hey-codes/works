@@ -1,0 +1,1981 @@
+/* Layout and component styles for the page. Values follow the v26 design
+   reference. Breakpoints: narrow <960 (one column), compact 960 to 1279 (map
+   column 320 to 380px), sm <480. The slim bar drops its wordmark under 1000 and
+   its section names under 640. */
+
+.container {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 0 clamp(20px, 4vw, 48px);
+}
+
+/* Type roles. Mono runs at three sizes: 13/500 data, 12/400 secondary and
+   this 11/500 uppercase label. Spacing sits on 2, 4, 8, 12, 16, 24, 32, 48, 64,
+   tightened for go-live (Cody, 2026-10-15): 44 between sections, 18 inside an
+   open record, and a hero that steps 10, 6, 24, 12. */
+.label {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+}
+
+/* ---------- Top header ---------- */
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.wordmark {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.cursor {
+  width: 0.6em;
+  height: 1.15em;
+  background: var(--red);
+}
+
+/* The keyframes live here, not in globals.css: a CSS module renames the
+   animation it names, so a global `cur` was never found and it never blinked. */
+.cursorBlink {
+  animation: cur 1.1s steps(1) infinite;
+}
+
+/* Only the script stops it, on the first scroll; without one it holds still. */
+:global(:root:not([data-js])) .cursorBlink {
+  animation: none;
+}
+
+@keyframes cur {
+  50% {
+    opacity: 0;
+  }
+}
+
+.headerNav {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.iconButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  box-sizing: border-box;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--line);
+  background: none;
+  padding: 0;
+  color: var(--ink);
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+
+.iconButton:hover,
+.iconButton:focus-visible {
+  color: var(--blue);
+  background: var(--soft);
+  border-color: var(--blue);
+  text-decoration: none;
+}
+
+/* Press feedback eases in and lets go at once. */
+.iconButton:active,
+.footerIcon:active,
+.toggle:active {
+  transform: scale(0.92);
+  transition: transform 0.08s;
+}
+
+/* The theme icon follows the resolved theme with no JS: sun in dark, moon in light. */
+.sun {
+  display: none;
+}
+
+:global(:root[data-theme="dark"]) .sun {
+  display: block;
+}
+
+:global(:root[data-theme="dark"]) .moon {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :global(:root:not([data-theme="light"])) .sun {
+    display: block;
+  }
+
+  :global(:root:not([data-theme="light"])) .moon {
+    display: none;
+  }
+}
+
+/* ---------- Slim bar ---------- */
+
+.slim {
+  position: fixed;
+  z-index: 20;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 48px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+  transform: translateY(-100%);
+  transition: transform 0.2s var(--ease);
+}
+
+.slim[data-visible="true"] {
+  transform: none;
+}
+
+.slimInner {
+  composes: container;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 2vw, 24px);
+}
+
+.slimWordmark {
+  composes: wordmark;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.slimNav {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  gap: 8px;
+}
+
+.seg {
+  position: relative;
+  flex: 1 1 0;
+  max-width: 120px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.seg:hover,
+.seg[aria-current="true"] {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.seg:active {
+  transform: translateY(1px);
+}
+
+.segLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.segTrack {
+  display: block;
+  position: relative;
+  height: 3px;
+  background: var(--line);
+  overflow: hidden;
+  /* Rests at 2px and thickens to 3 for the hovered and current section. */
+  transform: scaleY(0.667);
+  transform-origin: bottom;
+  transition: transform 0.15s;
+}
+
+.seg:hover .segTrack,
+.seg[aria-current="true"] .segTrack {
+  transform: none;
+}
+
+.segFill {
+  position: absolute;
+  inset: 0;
+  background: var(--red);
+  transform-origin: left;
+  transform: scaleX(var(--progress, 0));
+}
+
+/* After a click the fill eases to where the jump lands instead of chasing the scroll. */
+.slimNav[data-jumping="true"] .segFill {
+  transition: transform 0.3s var(--ease);
+}
+
+.segTip {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  padding: 4px 8px;
+  border-radius: var(--radius-control);
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.pdf {
+  flex-shrink: 0;
+  display: inline-flex;
+  padding: 8px 12px;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.pdf:hover,
+.pdf:focus-visible {
+  background: var(--soft);
+  text-decoration: none;
+}
+
+.pdf:active {
+  transform: translateY(1px);
+}
+
+/* The work-in-progress PDF control: a button dressed as .pdf, with the
+   slim bar's tip look under it, right-aligned. */
+.pdfButton {
+  font-family: inherit;
+  line-height: inherit;
+  background: none;
+  cursor: pointer;
+}
+
+.pdfButton:hover,
+.pdfButton:focus-visible {
+  background: var(--soft);
+}
+
+.pdfHeader {
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 40px;
+}
+
+.pdfWrap {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-flex;
+}
+
+/* In the header the nav is the anchor, so the tip never runs off the left at 360. */
+.pdfWrapStatic {
+  display: inline-flex;
+}
+
+.headerNav {
+  position: relative;
+  margin-left: auto;
+}
+
+/* Phones: the header's PDF control keeps the nav on the wordmark's row at 390;
+   at 360 it wraps and stays right-aligned. */
+@media (max-width: 419.98px) {
+  .headerNav {
+    gap: 4px;
+  }
+
+  .pdfHeader {
+    padding-inline: 8px;
+  }
+}
+
+/* At 360 the row has 320px: a tighter gap keeps the nav beside the wordmark
+   (the boxes themselves narrow under 380px on touch; see Breakpoints). */
+@media (max-width: 374.98px) {
+  .header {
+    column-gap: 4px;
+  }
+}
+
+.pdfTip {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 1;
+  width: max-content;
+  max-width: min(280px, calc(100vw - 32px));
+  padding: 4px 8px;
+  border-radius: var(--radius-control);
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 12px;
+  line-height: 1.45;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.pdfWrap:has(.pdfButton:focus-visible) .pdfTip,
+.pdfWrapStatic:has(.pdfButton:focus-visible) .pdfTip,
+.pdfWrap[data-open="true"] .pdfTip,
+.pdfWrapStatic[data-open="true"] .pdfTip {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Touch keeps :hover after a tap, so only a real pointer shows the note by hover;
+   on touch the tap toggles data-open. */
+@media (hover: hover) {
+  .pdfWrap:has(.pdfButton:hover) .pdfTip,
+  .pdfWrapStatic:has(.pdfButton:hover) .pdfTip {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+/* Doubled class so it outranks the :has() show rules above. */
+.pdfWrap[data-dismissed="true"] .pdfTip.pdfTip,
+.pdfWrapStatic[data-dismissed="true"] .pdfTip.pdfTip {
+  opacity: 0;
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .pdfTip {
+    transition: opacity 0.15s var(--ease), visibility 0.15s;
+  }
+}
+
+/* ---------- Page grid ---------- */
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 0 clamp(32px, 4vw, 64px);
+  align-items: start;
+}
+
+.hero {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+  padding: clamp(16px, 2vw, 24px) 0 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.aside {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  position: sticky;
+  top: 64px;
+  padding-top: clamp(16px, 2vw, 24px);
+  /* The CV's 32px above the footer, so the caption's last line, stuck at the
+     foot of the column, never sits on the footer's hairline. */
+  padding-bottom: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.main {
+  grid-column: 1;
+  grid-row: 2;
+  min-width: 0;
+  padding-bottom: 32px;
+}
+
+/* ---------- Hero ---------- */
+
+.name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(44px, 3.2vw + 30px, 72px);
+  letter-spacing: -0.025em;
+  line-height: 1;
+  margin: 0;
+  /* Trim the space above the caps so the name tops out level with the map plate. */
+  text-box: trim-start cap alphabetic;
+}
+
+@supports not (text-box: trim-start cap alphabetic) {
+  .map {
+    margin-top: 10px;
+  }
+}
+
+.tagline {
+  margin: 10px 0 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(19px, 1.7vw, 22px);
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  max-width: 30ch;
+  text-wrap: pretty;
+}
+
+.base {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.baseDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+
+/* On the first load of a visit the line types in after the dot, one
+   character a step, in 600ms. It starts at 500ms, as the hero's pen line
+   (200ms in, 450ms long, easing out) lifts off the name: the name is
+   underlined, then the line types, read top to bottom as one sequence. A
+   clip, so the line keeps its box and nothing moves; mono, so each step is
+   exactly one character. Without the flag (a later load, no JS, storage
+   blocked), under reduced motion and in print it is simply there. */
+@media screen and (prefers-reduced-motion: no-preference) {
+  :global([data-type-in]) .baseText {
+    animation: typeIn 600ms steps(var(--chars), end) 500ms backwards;
+  }
+}
+
+@keyframes typeIn {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+
+  to {
+    clip-path: inset(0);
+  }
+}
+
+.stats {
+  margin-top: 24px;
+  border-top: 2px solid var(--red);
+  padding-top: 12px;
+  container-type: inline-size;
+}
+
+.statGrid {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px 24px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-end;
+  gap: 4px;
+  min-width: 0;
+}
+
+.statLabel {
+  composes: label;
+  color: var(--muted);
+}
+
+.statFigure {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(20px, 6.4cqi, 34px);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums lining-nums;
+  white-space: nowrap;
+}
+
+/* With JS on, hold the server-rendered finals back until the count-up starts,
+   so they never flash before the count. The animation reveals them anyway if
+   the script never arrives. */
+@media (prefers-reduced-motion: no-preference) {
+  :global([data-js]) .statFigure[data-pending] {
+    visibility: hidden;
+    animation: reveal 0s 2s forwards;
+  }
+}
+
+@keyframes reveal {
+  to {
+    visibility: visible;
+  }
+}
+
+/* ---------- Map aside ---------- */
+
+.map {
+  width: 100%;
+  height: min(calc(100vh - 220px), 600px);
+  /* The small viewport where it is known, so Safari's toolbars never cover the frame's foot. */
+  height: min(calc(100svh - 220px), 600px);
+  min-height: 240px;
+  position: relative;
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-map);
+  overflow: hidden;
+}
+
+.caption {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 56px;
+  padding-top: 4px;
+}
+
+.captionTitle {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums lining-nums;
+  transition: color 0.2s;
+}
+
+.captionTitle[data-tone="blue"] {
+  color: var(--blue);
+}
+
+.captionSub {
+  display: flex;
+  /* A link or a tier chip after the figures takes the next line where the
+     column is narrow. Rows sit 6px apart so a chip's hover line clears the
+     chip below it. */
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  align-items: baseline;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* One figure that never breaks across lines ("2021-2022"). */
+.nowrap {
+  white-space: nowrap;
+}
+
+/* Read by screen readers, not shown: the caption's live line. */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* The map's one hint, in the role notes' style: a muted "›" line. */
+.captionHint {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.captionHint[data-off] {
+  visibility: hidden;
+}
+
+/* The open role's opening tiers in the caption, flagged as the map's card
+   flags them (red; solid opened, outlined supported, dashed pre-opening and
+   in progress), each a button that steps the map through that tier's sites.
+   They end the figures line, each chip its own item of the line's wrap, so
+   OPENED · 6 stays on the line where it fits and only a chip with no room
+   drops below (Cody, 2026-10-15). The flag stays red under the pointer and
+   the focus ring; blue marks only the interaction: a 1px blue line 2px under
+   the chip on hover, the same on the solid chip and the outlined ones, and
+   focus takes the blue ring. */
+.captionTiers {
+  display: contents;
+}
+
+.openingFlag {
+  composes: label;
+  position: relative;
+  line-height: 1;
+  padding: 4px 6px;
+  color: var(--red);
+  background: none;
+  border: 1px solid var(--red);
+  border-radius: var(--radius-control);
+  /* A button: the caption's family, the label's size and weight. */
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.openingFlag::after {
+  content: "";
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  bottom: -4px;
+  height: 1px;
+  background: var(--blue);
+  visibility: hidden;
+}
+
+.openingFlag:hover::after {
+  visibility: visible;
+}
+
+/* The caption's chips are 21px; their target is 27px, stopping short of the
+   chip on the next line (6px down) and the next chip (8px along). */
+button.openingFlag::before {
+  content: "";
+  position: absolute;
+  inset: -3px -4px;
+}
+
+.openingFlag:active {
+  transform: translateY(1px);
+}
+
+.openingFlag[data-tier="opened"] {
+  color: var(--bg);
+  background: var(--red);
+}
+
+.openingFlag[data-tier="pre-opening"],
+.openingFlag[data-tier="in-progress"] {
+  border-style: dashed;
+}
+
+.clear {
+  position: relative;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--blue);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* The line is 17px tall; its target is 25px, and 31px on touch, which stops
+   short of the caption's next line 6px down (a tier chip may sit there). */
+.clear::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+}
+
+@media (pointer: coarse) {
+  .clear::before {
+    inset: -7px -4px;
+  }
+}
+
+/* ---------- Sections ---------- */
+
+.section {
+  padding-top: 44px;
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: var(--track-label);
+}
+
+.dash {
+  width: 20px;
+  height: 4px;
+  background: var(--red);
+  border-radius: 1px;
+  /* Draws left to right the first time its head scrolls into view
+     (section-dash.tsx). */
+  transform-origin: left center;
+  transition: transform 0.18s var(--ease);
+}
+
+/* Undrawn only once the script has found it out of view; print is not
+   screen, so it prints drawn. */
+@media screen and (prefers-reduced-motion: no-preference) {
+  .dash[data-dash="pending"] {
+    transform: scaleX(0);
+    transition: none;
+  }
+}
+
+.h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 26px;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin: 8px 0 12px;
+}
+
+.rule {
+  border-top: 1px solid var(--ink);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: clamp(72px, 20%, 120px) minmax(0, 1fr);
+  gap: 12px;
+  align-items: baseline;
+  padding: 16px 12px 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.key {
+  composes: label;
+  color: var(--muted);
+}
+
+.bold {
+  font-weight: 650;
+}
+
+/* ---------- 01 Highlights ---------- */
+
+.hlBody {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hlTitle {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.hlText {
+  margin: 0;
+  font-family: var(--font-prose);
+  font-size: 15px;
+  line-height: 1.6;
+  max-width: 62ch;
+  text-wrap: pretty;
+}
+
+.proseLink {
+  color: var(--blue);
+  text-decoration: none;
+  padding-bottom: 1px;
+  background-image: linear-gradient(currentColor, currentColor), linear-gradient(var(--under), var(--under));
+  background-size: 0 1px, 100% 1px;
+  background-position: 0 100%, 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size 0.2s var(--ease);
+}
+
+.proseLink:hover {
+  text-decoration: none;
+  background-size: 100% 1px, 100% 1px;
+}
+
+/* ---------- 02 Experience ---------- */
+
+.role {
+  --row-bg: transparent;
+  --role-ink: var(--ink);
+  --role-link: var(--blue);
+  position: relative;
+  border-bottom: 1px solid var(--line);
+  background: var(--row-bg);
+  box-shadow: -12px 0 0 0 var(--row-bg);
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.role[data-ground="true"] {
+  --row-bg: var(--ground);
+}
+
+/* A role off the traced system steps back by color, not opacity, so it stays
+   readable. Pointing at it or tabbing into it brings it back. */
+@media screen {
+  .role[data-dim="true"]:not(:hover):not(:focus-within) {
+    --role-ink: var(--muted);
+    --role-link: var(--muted);
+  }
+
+  /* Dimming sweeps down the list, 15ms a row. Coming back is immediate. */
+  .role[data-dim="true"]:not(:hover):not(:focus-within) .company,
+  .role[data-dim="true"]:not(:hover):not(:focus-within) .roleTitle,
+  .role[data-dim="true"]:not(:hover):not(:focus-within) .siteCount,
+  .role[data-dim="true"]:not(:hover):not(:focus-within) .sysButton,
+  .role[data-dim="true"]:not(:hover):not(:focus-within) .toggle {
+    transition-delay: var(--sweep, 0s);
+  }
+}
+
+.rail {
+  position: absolute;
+  left: -12px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--blue);
+  /* Draws down from the top when its row is traced. */
+  transform: scaleY(0);
+  transform-origin: top left;
+  transition: transform 0.15s var(--ease);
+}
+
+.role[data-rail="true"] > .rail,
+.stackRow[data-active="true"] > .rail {
+  transform: none;
+}
+
+/* An open record keeps its rail, in red, whatever the mouse does and however
+   many rows are open: its start marked, as the section dash and the stat rule
+   mark theirs (Cody, 2026-10-15). A closed row's rail is blue while hovered,
+   focused or traced. */
+.role[data-open="true"] > .rail {
+  transform: none;
+  background: var(--red);
+}
+
+.roleHead {
+  display: grid;
+  grid-template-columns: clamp(72px, 20%, 120px) minmax(0, 1fr) auto 24px;
+  gap: 12px;
+  align-items: baseline;
+  padding: 16px 12px 16px 0;
+  cursor: pointer;
+  color: var(--ink);
+}
+
+.years {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.roleMain {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.company {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--role-ink);
+  transition: color 0.2s;
+}
+
+.role[data-active="true"] .company {
+  color: var(--blue);
+}
+
+/* An open record's name stays ink, hovered and selected too, so its red pen
+   line never sits under a blue name (Cody, 2026-10-15). Its ↗ stays blue. */
+.role[data-open="true"] .company {
+  color: var(--role-ink);
+}
+
+/* The ↗ after a company or school name: the brand's or school's own site.
+   Blue, drawn 11px tall on the name's baseline, a little under its 13px cap
+   height (a mono ↗ at the data size inks only 5.5px). */
+.outGlyph {
+  display: inline-flex;
+  margin-left: 6px;
+  vertical-align: baseline;
+  color: var(--role-link, var(--blue));
+}
+
+/* Pointing at the link nudges the arrow the way it points, 2px up and 2px
+   right. The glyph only, so the underline stays put; no layout moves. */
+.outGlyph > svg {
+  transition: transform 0.12s var(--ease);
+}
+
+/* Under reduced motion the arrow stays put rather than jumping. */
+@media (prefers-reduced-motion: no-preference) {
+  .outLink:hover > svg,
+  .outLink:focus-visible > svg,
+  .school:hover .outGlyph > svg,
+  .school:focus-visible .outGlyph > svg {
+    transform: translate(2px, -2px);
+  }
+}
+
+/* A company's ↗ is a link of its own in the clickable row. Its underline
+   draws in 3px under it on hover, as a prose link's does. */
+.outLink {
+  composes: outGlyph;
+  position: relative;
+  padding-bottom: 3px;
+  text-decoration: none;
+  background: linear-gradient(currentColor, currentColor) no-repeat 0 100% / 0 1px;
+  transition: color 0.2s, background-size 0.18s var(--ease);
+}
+
+/* Inside a pen host the pen is the underline, so the hover line gives way. */
+.penHost .outLink {
+  background: none;
+}
+
+/* The glyph is small; the target around it is not: 24px wide, reaching 7px
+   right and 6px left, into the margin before it. */
+.outLink::before {
+  content: "";
+  position: absolute;
+  inset: -8px -7px -5px -6px;
+}
+
+.outLink:hover {
+  text-decoration: none;
+  background-size: 100% 1px;
+}
+
+.outLink:active {
+  transform: translateY(1px);
+}
+
+.roleTitle {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--role-ink);
+  transition: color 0.2s;
+}
+
+.context {
+  display: flex;
+  gap: 8px;
+  max-width: 62ch;
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+.meta {
+  margin-top: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 0;
+  composes: label;
+  color: var(--muted);
+}
+
+.metaPart {
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: baseline;
+}
+
+/* Collapsed-only lines leave when the record opens. */
+.role[data-open="true"] .context,
+.role[data-open="true"] .meta {
+  display: none;
+}
+
+.sysButton {
+  position: relative;
+  /* The underline draws left to right on hover and holds while pinned. */
+  background: linear-gradient(currentColor, currentColor) no-repeat 0 100% / 0 1px;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: var(--role-link, var(--blue));
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.2s, background-size 0.18s var(--ease);
+}
+
+/* The label is one line of small type; the target around it is not. */
+.sysButton::before {
+  content: "";
+  position: absolute;
+  inset: -12px -4px;
+}
+
+.sysButton:active,
+.clear:active {
+  transform: translateY(1px);
+}
+
+.sysButton:hover,
+.sysButton[aria-pressed="true"] {
+  background-size: 100% 1px;
+}
+
+/* Under 960px the script renders the name as text (nothing traces there);
+   until it runs, the button already reads as text in its line's tone. */
+@media (max-width: 959.98px) {
+  .sysButton {
+    color: inherit;
+    background: none;
+    cursor: default;
+  }
+}
+
+.siteCount {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--role-ink);
+  transition: color 0.2s;
+}
+
+.role[data-open="true"] .siteCount {
+  visibility: hidden;
+}
+
+.siteWord {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.toggle {
+  position: relative;
+  isolation: isolate;
+  /* Centered on the company line; an icon has no baseline to align to. */
+  align-self: start;
+  margin-top: -1px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--role-link);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+/* 44px target around a 24px glyph box. */
+.toggle::before {
+  content: "";
+  position: absolute;
+  inset: -10px;
+}
+
+/* 32px hover ground, drawn outside the box so the grid column stays 24. */
+.toggle::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -4px;
+  border-radius: var(--radius-control);
+  background: transparent;
+  transition: background 0.15s;
+}
+
+.toggle:hover::after,
+.toggle:focus-visible::after {
+  background: var(--chip);
+}
+
+.togglePlus {
+  display: block;
+  transition: transform 0.2s var(--ease);
+}
+
+.role[data-open="true"] .togglePlus {
+  transform: rotate(45deg);
+}
+
+.panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  /* Closing is quicker than opening. */
+  transition: grid-template-rows 0.16s var(--ease), visibility 0.16s;
+}
+
+.role[data-open="true"] .panel {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition: grid-template-rows 0.22s var(--ease), visibility 0.22s;
+}
+
+.panelClip {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.panelBody {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 12px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.band {
+  display: grid;
+  grid-template-columns: clamp(72px, 20%, 120px) minmax(0, 1fr);
+  gap: 12px;
+  align-items: baseline;
+  padding-right: 48px;
+  /* SPEC, BRIEF and DETAILS fade up 4px in turn as the record opens, 40ms
+     apart, the first 40ms after the panel starts to grow. Closing is instant:
+     they hold while the panel shuts (0.16s) and reset only then, unseen. */
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0s 0.16s, transform 0s 0.16s;
+}
+
+.band:nth-child(2) {
+  --band: 1;
+}
+
+.band:nth-child(3) {
+  --band: 2;
+}
+
+.role[data-open="true"] .band {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.2s var(--ease) calc(40ms + var(--band, 0) * 40ms),
+    transform 0.2s var(--ease) calc(40ms + var(--band, 0) * 40ms);
+}
+
+.bandLabel {
+  composes: key;
+  padding-top: 18px;
+}
+
+.bandBody {
+  min-width: 0;
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+}
+
+.bandLabelDetails {
+  composes: key;
+  padding-top: 18px;
+}
+
+.bandBodyDetails {
+  min-width: 0;
+  padding-top: 18px;
+}
+
+.spec {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 28ch));
+  gap: 12px 24px;
+  padding-bottom: 18px;
+}
+
+.specItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.specItem dt,
+.detailRow dt {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: var(--track-label);
+  color: var(--muted);
+}
+
+.specItem dd {
+  margin: 0;
+  font-weight: 500;
+  /* A phone's column is about 19 characters; a word longer than that breaks
+     rather than running into the next column. */
+  overflow-wrap: anywhere;
+}
+
+.cmmsList {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.cmmsList > span {
+  white-space: nowrap;
+}
+
+.brief {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.briefText {
+  margin: 0;
+  font-family: var(--font-prose);
+  font-size: 14px;
+  line-height: 1.6;
+  max-width: 62ch;
+  text-wrap: pretty;
+}
+
+.briefMuted {
+  composes: briefText;
+  color: var(--muted);
+}
+
+/* DETAILS reads as SPEC's sibling: a row per key (SKILL, TOOLS, AWARD) in
+   SPEC's muted key, then its values, each a chip outlined in the hairline,
+   with no fill. The keys share one column, as wide as the widest. */
+.details {
+  margin: 0;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 8px 12px;
+  align-items: baseline;
+}
+
+.detailRow {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: baseline;
+}
+
+.detailChips {
+  margin: 0;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.detailChip {
+  /* A chip wraps to the next line whole (the row wraps on each chip's full
+     width), and breaks inside itself only if it is wider than the whole
+     line, so it can never run out of the band at 320. */
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  font-weight: 500;
+  line-height: 1.4;
+  padding: 2px 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+}
+
+/* An award is marked in red, outline and text, as an opening flag is: what
+   stands out in the record. Its key stays muted like the others. */
+.detailRow[data-key="AWARD"] .detailChip {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+/* ---------- Pen stroke ---------- */
+
+/* The word a pen line sits under. Inline, so the name wraps and sizes as it
+   did; the line inside it is absolutely placed and moves nothing. */
+.penHost {
+  position: relative;
+}
+
+/* A company name keeps one line, so its pen line never spans a wrap. */
+.company .penHost {
+  white-space: nowrap;
+}
+
+/* A loose fineliner line just under the baseline, crossing the descenders.
+   Its 8px box centres 0.09em under the baseline, and at least 3px, so on a
+   19px name it clears the letters' feet: the host's content box ends at
+   Fraunces' descent, 0.25em below the baseline, so the box's foot sits that
+   less the drop, less half the box, above it. A touch wider than the word. */
+.pen {
+  position: absolute;
+  left: -0.04em;
+  bottom: calc(0.25em - max(0.09em, 3px) - 4px);
+  width: calc(100% + 0.1em);
+  height: 8px;
+  overflow: visible;
+  fill: currentColor;
+  pointer-events: none;
+}
+
+.pen[data-tone="red"] {
+  color: var(--red);
+}
+
+.pen[data-tone="blue"] {
+  color: var(--blue);
+}
+
+/* Drawn on left to right as it appears; under reduced motion, and in print
+   (where only the hero's shows), it is simply there. */
+@media screen and (prefers-reduced-motion: no-preference) {
+  .pen[data-draw] {
+    animation: penDraw 450ms ease-out both;
+  }
+
+  /* The hero's waits a beat after the first paint, so it is seen being drawn. */
+  .name .pen[data-draw] {
+    animation-delay: 200ms;
+  }
+}
+
+@keyframes penDraw {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+
+  to {
+    clip-path: inset(0);
+  }
+}
+
+/* ---------- 03 Education ---------- */
+
+.edu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.school {
+  width: fit-content;
+  padding-bottom: 3px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--ink);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+/* The underline track runs under the name only, not the ↗. */
+.schoolName {
+  padding-bottom: 3px;
+  background-image: linear-gradient(var(--blue), var(--blue)), linear-gradient(var(--under), var(--under));
+  background-size: 0 1px, 100% 1px;
+  background-position: 0 100%, 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size 0.25s var(--ease);
+}
+
+.school:hover {
+  color: var(--blue);
+  text-decoration: none;
+}
+
+/* Hover and focus trade the straight underline for the pen line, so the
+   two never show together. */
+.school:hover .schoolName,
+.school:focus-visible .schoolName {
+  background-size: 0 1px, 0 1px;
+  transition: none;
+}
+
+.school .pen {
+  visibility: hidden;
+}
+
+.school:hover .pen,
+.school:focus-visible .pen {
+  visibility: visible;
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+  .school:hover .pen,
+  .school:focus-visible .pen {
+    animation: penDraw 450ms ease-out both;
+  }
+}
+
+.degree {
+  font-family: var(--font-prose);
+  font-size: 15px;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+.eduMeta {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* ---------- 04 Capabilities and 05 Stack ---------- */
+
+.skill {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skillCategory {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  font-size: 13px;
+  line-height: 1.4;
+  background: var(--chip);
+  padding: 4px 8px;
+  border-radius: var(--radius-control);
+}
+
+/* The hover hint, only where something can hover and a row traces (from
+   960px), as the map's hint is. */
+@media (hover: none), (max-width: 959.98px) {
+  .stackHint {
+    display: none;
+  }
+}
+
+/* 05 Stack's hover hint ends its eyebrow line, muted, at the right. */
+.stackHint {
+  margin-left: auto;
+  color: var(--muted);
+}
+
+.stackGroup {
+  display: grid;
+  grid-template-columns: clamp(72px, 20%, 120px) minmax(0, 1fr);
+  gap: 12px;
+  align-items: baseline;
+  border-bottom: 1px solid var(--line);
+}
+
+/* The page's last row: the footer's hairline closes it, so it draws none of
+   its own (two rules 32px apart read as a double line). */
+.stackGroup:last-child {
+  border-bottom: 0;
+}
+
+.stackRows {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stackRow {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, clamp(110px, 34%, 200px)) minmax(0, 1fr);
+  gap: 12px;
+  align-items: baseline;
+  width: 100%;
+  border: 0;
+  padding: 8px 12px 8px 0;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.45;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  background: transparent;
+  transition: background 0.15s;
+}
+
+.stackRow[data-active="true"] {
+  background: var(--ground);
+}
+
+.stackRow:active {
+  transform: translateY(1px);
+}
+
+/* An app used only on his own: the same row, with nothing to trace. A div,
+   so it takes the button's border box to line its columns up with theirs. */
+.stackRow[data-static] {
+  box-sizing: border-box;
+  cursor: default;
+}
+
+.stackRow[data-static]:active {
+  transform: none;
+}
+
+.stackName {
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  transition: color 0.15s;
+}
+
+.stackRow[data-active="true"] .stackName {
+  color: var(--blue);
+}
+
+.stackAt {
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  color: var(--muted);
+}
+
+.stackAt > span {
+  white-space: nowrap;
+}
+
+/* ---------- Footer ---------- */
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px 0 48px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.printContact {
+  display: none;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* UPDATED, BUILT and TYPE read as SPEC's key rows: its muted 11px key in one
+   column as wide as the widest, the values in the footer's muted 12px. */
+.footerRows {
+  margin: 0;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 4px 12px;
+  line-height: 18px;
+}
+
+.footerRow {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: baseline;
+}
+
+.footerRow dd {
+  margin: 0;
+  min-width: 0;
+}
+
+.footerItem {
+  white-space: nowrap;
+}
+
+/* The prose link's underline idiom, in the footer's muted tone until hover
+   or focus, so the credits never compete with the header. */
+.footerLink {
+  composes: proseLink;
+  color: var(--muted);
+  transition: color 0.15s, background-size 0.2s var(--ease);
+}
+
+.footerLink:hover,
+.footerLink:focus-visible {
+  color: var(--blue);
+  background-size: 100% 1px, 100% 1px;
+}
+
+/* The icons sit at the end of the TYPE row, centred on its 18px line. */
+.footerLinks {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  align-self: flex-end;
+  /* Half the icon box less half the 18px row: (40 - 18) / 2, so the icons
+     centre on the last row's line. 44px boxes on touch take (44 - 18) / 2. */
+  margin-bottom: -11px;
+}
+
+.footerIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-control);
+  color: var(--muted);
+}
+
+.footerIcon:hover,
+.footerIcon:focus-visible {
+  color: var(--blue);
+  background: var(--soft);
+}
+
+/* Touch icons are 44px, so the centring margin grows with them. */
+@media (pointer: coarse) {
+  .footerLinks {
+    margin-bottom: -13px;
+  }
+}
+
+/* Phones: the rows take the width and the icons a row of their own at the
+   end, rather than squeezing TYPE onto two lines beside them. */
+@media (max-width: 479.98px) {
+  .footerRows {
+    flex-basis: 100%;
+  }
+
+  .footerLinks {
+    /* The 40px box has (40 - 16) / 2 = 12px of slack around its 16px glyph.
+       The top -8 hands back 8 of it, leaving the glyph 16px under the rows
+       beside the footer's 12px gap; the bottom -12 takes all of it. */
+    margin: -8px 0 -12px auto;
+  }
+}
+
+/* ---------- Breakpoints ---------- */
+
+@media (pointer: coarse) {
+  .pdfHeader {
+    min-height: 44px;
+  }
+
+  .iconButton,
+  .footerIcon {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* Under 380px four 44px boxes in the header would touch and read as one
+   block: they draw at 40px with 4px between them, and a 2px ring of hit area
+   each keeps the 44px touch target (Cody, 2026-10-15). */
+@media (max-width: 379.98px) and (pointer: coarse) {
+  .headerNav {
+    gap: 4px;
+  }
+
+  .headerNav .iconButton,
+  .headerNav .pdfHeader {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    min-height: 40px;
+  }
+
+  .headerNav .pdfHeader {
+    width: auto;
+  }
+
+  .headerNav .iconButton::before,
+  .headerNav .pdfHeader::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+  }
+}
+
+@media (max-width: 999.98px) {
+  .slimWordmark {
+    display: none;
+  }
+}
+
+/* Compact: the map column stays narrow so the text column keeps its measure. */
+@media (min-width: 960px) and (max-width: 1279.98px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) clamp(320px, 34vw, 380px);
+  }
+
+  .map {
+    height: min(calc(100vh - 220px), 480px);
+    height: min(calc(100svh - 220px), 480px);
+  }
+}
+
+/* Slim bar shows numbers only, full name in a tooltip. */
+@media (max-width: 639.98px) {
+  .segName {
+    display: none;
+  }
+
+  .slim[data-visible="true"] .seg:hover .segTip,
+  .slim[data-visible="true"] .seg:focus-visible .segTip {
+    display: block;
+  }
+}
+
+/* Narrow: one column, the map moves under the hero. */
+@media (max-width: 959.98px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* One column keeps a reading measure instead of running the full width. */
+  .hero,
+  .aside,
+  .main {
+    max-width: 720px;
+  }
+
+  .aside {
+    grid-column: 1;
+    grid-row: 2;
+    position: static;
+    padding-top: 32px;
+    padding-bottom: 0;
+  }
+
+  .main {
+    grid-row: 3;
+  }
+
+  .map {
+    height: auto;
+    aspect-ratio: 16 / 10;
+    max-height: 560px;
+    /* A phone's 16/10 is only 240px: tall enough here for a site card to fit. */
+    min-height: 320px;
+  }
+}
+
+/* Phones: the same terminal rhythm, compacted (Cody, 2026-10-15). Keys and
+   years sit over what they label, as the role rows' years do, so the text
+   gets the full width and wraps less; the gaps step down a notch. */
+@media (max-width: 479.98px) {
+  .header {
+    padding: 8px 0;
+  }
+
+  .hero {
+    padding-top: 12px;
+  }
+
+  /* The four figures stay on one line, as on desktop, in columns sized to
+     their labels so no label wraps. */
+  .statGrid {
+    grid-template-columns: repeat(4, auto);
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .aside {
+    gap: 8px;
+  }
+
+  .section {
+    padding-top: 32px;
+  }
+
+  .h2 {
+    margin: 6px 0 10px;
+  }
+
+  .row {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 4px;
+    padding: 12px 12px 12px 0;
+  }
+
+  .hlBody,
+  .skill {
+    gap: 6px;
+  }
+
+  .chips {
+    gap: 6px;
+  }
+
+  .stackHead {
+    margin-top: 24px;
+    padding-bottom: 8px;
+  }
+
+  .stackGroup {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 0;
+    padding-top: 12px;
+  }
+
+  .stackRow {
+    padding: 6px 12px 6px 0;
+  }
+
+  .main {
+    padding-bottom: 24px;
+  }
+
+  .footer {
+    padding: 8px 0 24px;
+  }
+
+  /* Years and the site count share a line above the company, so the record
+     gets the full width. */
+  .roleHead {
+    grid-template-columns: minmax(0, 1fr) auto 24px;
+    grid-template-areas:
+      "years count count"
+      "main main toggle";
+    row-gap: 2px;
+    padding: 12px 12px 12px 0;
+  }
+
+  .context,
+  .meta {
+    margin-top: 2px;
+  }
+
+  .years {
+    grid-area: years;
+  }
+
+  .siteCount {
+    grid-area: count;
+  }
+
+  .roleMain {
+    grid-area: main;
+  }
+
+  .toggle {
+    grid-area: toggle;
+  }
+
+  .band {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+    padding-right: 12px;
+  }
+
+  .bandBody,
+  .bandBodyDetails {
+    padding-top: 9px;
+  }
+
+  /* At 360 a key beside "Cross-functional Team Leadership" runs past the
+     band, so the key sits over its chips, as SPEC's keys sit over values. */
+  .details {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 12px;
+  }
+
+  .detailRow {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 4px;
+  }
+
+  /* SPEC keeps desktop's two columns (SECTOR | CMMS over FOOTPRINT | BASE),
+     each key over its value, so the record scrolls less; a long value wraps
+     inside its column (Cody, 2026-10-15). */
+  .spec {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 16px;
+  }
+}
+
+/* Under 340px (a 360 phone) the phone's one-line labels would sit closer
+   than 16px, near a word space, so they take two rows of two. After the
+   phone rules, which it overrides. */
+@container (max-width: 339.98px) {
+  .statGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-content: stretch;
+  }
+}
+
+/* ---------- Print ---------- */
+
+@media print {
+  .layout {
+    display: block;
+  }
+
+  .printContact {
+    display: flex;
+  }
+
+  .panel {
+    grid-template-rows: 1fr;
+    visibility: visible;
+  }
+
+  .role,
+  .row {
+    break-inside: avoid;
+  }
+
+  .band {
+    opacity: 1;
+    transform: none;
+  }
+
+  .role {
+    background: none;
+    box-shadow: none;
+  }
+
+  .section,
+  .hero {
+    padding-top: 24px;
+  }
+
+  .h2 {
+    break-after: avoid;
+  }
+}

@@ -1,0 +1,223 @@
+export type IconType = "github" | "linkedin" | "instagram";
+
+export interface Stat {
+  /** Final figure as displayed, e.g. "2.8M+". The count-up parses it. */
+  value: string;
+  label: string;
+}
+
+export interface CareerHighlight {
+  /** Mono row key in 01 Highlights, e.g. "FIRST HIRE". */
+  key: string;
+  title: string;
+  /** Markdown-lite: **bold** and [text](url). */
+  text: string;
+}
+
+/** A DETAILS chip kept in the data. The TOOLS row is not one: it is read from `tools.apps`. */
+export interface RoleDetail {
+  label: "Skill" | "Award";
+  value: string;
+}
+
+export interface Role {
+  /** Data key. Locations and the tools tables refer to a role by this string. */
+  company: string;
+  /** Name shown on the page, when it differs from the key. */
+  display?: string;
+  /** Short name for the STACK rows, when it differs from the key. */
+  short?: string;
+  /** The brand's own site: a ↗ after the name. */
+  link?: string;
+  /** Several brands in one name, each with its own ↗ after its word ("J.Crew ↗ and Madewell ↗"). Each `name` is a word of the display. */
+  links?: ReadonlyArray<{ name: string; url: string }>;
+  location: string;
+  title: string;
+  /** "Mon YYYY" */
+  start: string;
+  /** "Mon YYYY" or "Present" */
+  end: string;
+  /** Sites the copy claims for this role. 0 hides the count and the map line. */
+  sites: number;
+  /** Word after the count in the map caption when it is not "sites", e.g. "opened". */
+  sitesLabel?: string;
+  /** Word after the count wherever it shows (row, FOOTPRINT, caption) when the role counts something other than sites, e.g. "clients". */
+  countWord?: string;
+  /** Rows in locations.ts for this role, when the records hold more than `sites`. */
+  mapSites?: number;
+  sector?: string;
+  /** As printed, e.g. "220K+ sq ft". */
+  sqft?: string;
+  /** In order of use; two names read as a migration ("Limble → FEXA"). */
+  cmms: readonly string[];
+  /** One-line context note on the collapsed row. */
+  context: string;
+  description: string;
+  /** Markdown-lite: **bold**. */
+  highlights?: readonly string[];
+  /** DETAILS chips in the expanded record. */
+  details: readonly RoleDetail[];
+}
+
+export interface SkillGroup {
+  /** Mono row key in 04 Capabilities, e.g. "OPS". */
+  key: string;
+  category: string;
+  items: readonly string[];
+}
+
+/**
+ * Where a tool was used: a role (exact `work[].company`) or "Personal", his own
+ * use outside any role. "Personal" is a place, not a role: it lists last in
+ * STACK and traces nothing on the map.
+ */
+export type UsedPlace = Brand | "Personal";
+
+/** Tool or platform name to where it was used: roles in page order, then "Personal". */
+export type UsedAt = Readonly<Record<string, readonly UsedPlace[]>>;
+
+/** A footer credits row: its key, then each name linked to its own site. */
+export interface FooterCredits {
+  key: string;
+  items: ReadonlyArray<{ name: string; url: string }>;
+}
+
+export interface ResumeData {
+  name: string;
+  initials: string;
+  tagline: string;
+  /** Hero base line, as shown. */
+  location: string;
+  locationLink: string;
+  about: string;
+  summary: string;
+  personalWebsiteUrl: string;
+  /** ISO date of the last content change; the footer shows it as "Mon YYYY". */
+  updated: string;
+  /** Path or URL of the resume PDF. null hides the PDF link. */
+  pdf: string | null;
+  /** Note shown on the PDF control while `pdf` is null. */
+  pdfPending: string;
+  contact: {
+    social: ReadonlyArray<{
+      name: string;
+      url: string;
+      icon: IconType;
+      handle?: string;
+    }>;
+  };
+  stats: readonly Stat[];
+  /** Fixed text around the map. */
+  map: {
+    title: string;
+    caption: string;
+    hint: string;
+    hintNarrow: string;
+    /** Accessible name of the map image. */
+    label: string;
+    /** Accessible names of the map's own buttons. */
+    controls: { zoomIn: string; zoomOut: string; close: string };
+    /** A hovered dot that shares its address: takes {name} and {n}, the others there. */
+    hoverMore: string;
+    /** A hovered circle's opening sites, after its name ("Seattle +3 · 2 openings"): takes {n}. */
+    hoverOpenings: { one: string; other: string };
+    /** The site card in a map popup. `allSites` and `sitesHere` take {n}. */
+    card: {
+      type: string;
+      sqft: string;
+      opening: string;
+      estimated: string;
+      /** The opening flag, by Cody's part in it. */
+      flags: Record<Opening, string>;
+      allSites: string;
+      readRole: string;
+      /** The list card's header where a tap reads several sites; also the way back to it. */
+      sitesHere: string;
+      /** The market row's key. */
+      market: string;
+      /** Chips under a site's name; `closed` may take " · {year}" after it. */
+      chips: { flagship: string; office: string; flexOffice: string; newLocation: string; closed: string };
+    };
+    /** Control that returns the map to every site. */
+    reset: string;
+  };
+  /** The footer's key rows, in SPEC's style: UPDATED, then the credits. */
+  footer: {
+    /** Key of the row that shows `updated`; the one row that prints. */
+    updated: string;
+    /** What the site is built with. */
+    built: FooterCredits;
+    /** The three type families. */
+    type: FooterCredits;
+  };
+  education: ReadonlyArray<{
+    school: string;
+    link: string;
+    location: string;
+    degree: string;
+    year: string;
+  }>;
+  /** Extra rows under Education, e.g. a membership. */
+  affiliations: ReadonlyArray<{ key: string; text: string }>;
+  careerHighlights: readonly CareerHighlight[];
+  work: readonly Role[];
+  skills: readonly SkillGroup[];
+  /** The STACK block: CMMS platforms and apps, each with where it was used. */
+  tools: { cmms: UsedAt; apps: UsedAt };
+  projects: ReadonlyArray<{
+    title: string;
+    techStack: readonly string[];
+    description: string;
+    location: string;
+    status: "on-boarding" | "in-progress" | "complete";
+  }>;
+}
+
+/** The eight employers and Independent, exactly as `work[].company` spells them. */
+export type Brand =
+  | "J.Crew / Madewell"
+  | "SoulCycle"
+  | "Dolce & Gabbana"
+  | "FENDI"
+  | "Rivian Automotive"
+  | "Balenciaga"
+  | "Bathhouse"
+  | "Industrious"
+  | "Independent";
+
+/** One managed site. Field contract: docs/locations-spec.md. */
+export interface Site {
+  id: number;
+  brand: Brand;
+  name: string;
+  /** Short per-brand vocabulary, e.g. "Boutique", "Studio", "Flex office". */
+  type: string;
+  /** Plain integer square feet. null when nothing is on file. */
+  sqft: number | null;
+  /** The figure is a typical size for that kind of store, not a recorded one. */
+  sqftEstimate?: boolean;
+  /** Reader-facing market name, e.g. "Los Angeles". */
+  city: string;
+  country: "US" | "CA" | "MX";
+  lat: number;
+  lon: number;
+  /** true marks generated data. Real records carry false. */
+  placeholder: boolean;
+  /** As of the build date. A store that relocated counts as closed. */
+  status: "open" | "closed";
+  /** Year a closed site closed, where on record (Independent's Twisted Stems). */
+  closedYear?: number;
+  kind: "store" | "office";
+  /** Cody's part in this site's opening (source: his locations master). Unset: open before he arrived, or no part. */
+  opening?: Opening;
+  /** Year the site opened, where the master records it. Shown with the opening flag. */
+  openedYear?: number;
+}
+
+/**
+ * Cody's part in a site's opening: "opened" it was his role to open it;
+ * "supported" he contributed to or managed parts of the opening; "pre-opening"
+ * it was in progress during his tenure and opened after; "in-progress" an
+ * opening he is running now.
+ */
+export type Opening = "opened" | "supported" | "pre-opening" | "in-progress";

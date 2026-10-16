@@ -1422,33 +1422,11 @@
   border-bottom: 0;
 }
 
-/* The rule inside APPS that sets off the personal-only apps: a dashed
-   hairline with its muted label in the key's style (Cody, 2026-10-15). */
+/* The dashed rule inside APPS that sets off the apps used only on his own
+   (Cody, 2026-10-15). It spans the rows' columns, short of their right edge. */
 .stackRule {
-  display: flex;
-  align-items: center;
-  gap: 8px;
   margin: 6px 12px 6px 0;
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 1;
-  letter-spacing: var(--track-label);
-  color: var(--muted);
-}
-
-.stackRule::before,
-.stackRule::after {
-  content: "";
-  height: 0;
   border-top: 1px dashed var(--edge);
-}
-
-.stackRule::before {
-  width: 16px;
-}
-
-.stackRule::after {
-  flex: 1;
 }
 
 .stackRows {

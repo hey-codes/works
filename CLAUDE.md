@@ -53,6 +53,7 @@ only on Cody's go (`docs/launch-checklist.md` has the steps and the open items).
 | `docs/PRODUCT.md` | Fixed product decisions. Read first. |
 | `docs/DESIGN.md` | Visual system: tokens, type, patterns, motion, print |
 | `docs/locations-spec.md` | Contract for real location data |
+| `docs/launch-checklist.md` | Live state, how to ship an update (preview first, push only on Cody's go), open items |
 | `src/app/globals.css` | Tokens as CSS variables, light and dark |
 | `src/data/resume-data.ts` | All content |
 | `src/data/locations.ts` | Map sites, from Cody's records. No source, address or contact fields, ever |

@@ -17,7 +17,7 @@
   - Highlights' RANGE title repeats the stat strip (13 years, 9 brands, 400+)
   - Balenciaga's brief says "55 boutiques" beside its "56 sites" (the HQ is the 56th)
   - Capabilities' keys echo their titles (OPS / Operations, MEP / Building Systems (MEP))
-  - Section titles and STACK's hover hint are written in the components, not in `resume-data.ts`, where the house rule keeps all copy
+  - Section titles (and the slim bar's section names) are written in the components, not in `resume-data.ts`, where the house rule keeps all copy
   - The hidden `projects` list has no flower shop while Twisted Stems, a floral shop, is one of Independent's map clients (not shown on the page)
 
 ### Site
@@ -46,7 +46,6 @@
 ### Site
 
 - [x] Map: no market name is drawn cut at the frame's edge; one that would run off it is not drawn at that zoom (edge guards) (Cody, 2026-10-15)
-- [x] Map: the "Every location" caption shows the portfolio's opening tiers as chips, phones included, the key to the red marks (Cody, 2026-10-15)
 - [x] Accepted as they are: no skip link, no name for the header's `nav`, the hero's `h1` outside `main`, and under 1280px a site card can open over the map's controls (Cody, 2026-10-15)
 - [x] README: points to the live site; the link to the deleted `hey-codes/cv` is gone (2026-10-15)
 
@@ -59,3 +58,17 @@
 - [x] Domain: `codymitch.works` moved to project `works`, `www` redirecting (308) to the apex, and Vercel Authentication set back to all except custom domains in the same step (2026-10-15; the site was down about a minute between the old project's deletion and the move)
 - [x] `hey-codes/cv` deleted on GitHub by Cody (2026-10-15), in place of a pointer note and archiving
 - [x] Old Vercel project `cv` deleted by Cody (2026-10-15) rather than paused; no rollback project is kept
+
+## Done: first update, live 2026-10-15 evening (`df9dec0`)
+
+Reviewed by Cody on the `preview` branch, then published to `main` as one commit. Vercel keeps the launch deployment (`2af63a6`) for Instant Rollback.
+
+- [x] Map, one pick at a time: hovering or focusing a role, a CMMS name or a STACK row filters the map in place; a click locks it in and frames it; clicking again, Esc or Show every site clears it. From 960px a role's record is open while it is the pick; phones unchanged
+- [x] Project taxonomy: opened and supported became new site opening (NSO, 37 sites), pre-opening became in construction (8); one red diamond for every project; the card's PROJECT flag names it with its year ("NSO · 2016", "IN CONSTRUCTION · 2025"); relocation and renovation are ready for their sites
+- [x] A static legend under the zoom buttons (one short line on phones); a live Honolulu inset bottom left, replacing the caption's link; the caption's tier chips gone
+- [x] No map name is drawn half hidden under the legend, the inset or a button, as at the frame's edges
+- [x] Role rows hover to a plain gray ground; the stats sit under a gray hairline; the slim bar's cursor blinks as it slides in; CMMS names take a dotted underline
+- [x] Footer as a bookend to the header: the wordmark opposite LinkedIn ↗ and GitHub ↗, the colophon in one quiet line under a hairline
+- [x] STACK: the personal-only apps sit last in APPS under a dashed rule; the Stack hover hint is gone
+- [x] On iPhones (WebKit) the map now fills its frame; the launch version left its lower third empty
+- [x] Checks: typecheck, 186 tests, the data check, the build and the private-details scan; Chromium at 1440, 1024, 768, 390 and 360 in both themes, and WebKit as an iPhone and on desktop

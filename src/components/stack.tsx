@@ -78,15 +78,7 @@ export function Stack() {
   ];
   return (
     <section id="s5" className={styles.section}>
-      <SectionHead
-        eyebrow="05"
-        title="Stack"
-        aside={
-          <span data-noprint="" data-needs-js="" className={styles.stackHint}>
-            HOVER A ROW TO TRACE IT ON THE MAP
-          </span>
-        }
-      />
+      <SectionHead eyebrow="05" title="Stack" />
       {stack.map((grp) => (
         <div key={grp.key} className={styles.stackGroup}>
           <span className={styles.key}>{grp.key}</span>

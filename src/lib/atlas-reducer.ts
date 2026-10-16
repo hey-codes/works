@@ -92,8 +92,6 @@ export interface MapFocus {
   shown: readonly number[] | null;
   /** The roles the camera fits: the pick's, never a hover's. null frames every site. */
   frame: readonly number[] | null;
-  /** Roles whose sites are tinted blue. Always empty: a pick filters instead of tinting (Cody, 2026-10-15). */
-  tint: readonly number[];
 }
 
 /**
@@ -102,6 +100,6 @@ export interface MapFocus {
  * 960px the list does not drive the map, so it shows every site.
  */
 export function mapFocus(s: AtlasState, rolesOf: (system: string) => readonly number[], narrow: boolean): MapFocus {
-  if (narrow) return { shown: null, frame: null, tint: [] };
-  return { shown: pickRoles(shownPick(s), rolesOf), frame: pickRoles(s.pick, rolesOf), tint: [] };
+  if (narrow) return { shown: null, frame: null };
+  return { shown: pickRoles(shownPick(s), rolesOf), frame: pickRoles(s.pick, rolesOf) };
 }

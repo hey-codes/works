@@ -5,7 +5,6 @@ import type * as MapLibreGL from "maplibre-gl";
 import { useEffect, useMemo, useRef } from "react";
 import { useMap } from "@/components/ui/map";
 import { RESUME_DATA } from "@/data/resume-data";
-import type { MapFocus } from "@/lib/atlas-reducer";
 import { cityLabelPlan, type GroundPalette, groundPaint, mixHex, regionLabelPlan } from "@/lib/basemap";
 import { COUNT_COVERED, HAS_TIER, MARK_ICON, MARKET_SORT_KEY, marketClusterProperties, marketLayout, marketNameField, marketRadius, marketStyle, NAME_ANCHORS, NOTCH_ICON, type Palette, siteStyle } from "@/lib/cluster-style";
 import { coveredCounts, type DrawnCircle } from "@/lib/count-cover";
@@ -104,7 +103,6 @@ export function SiteClusters({
   markets,
   spotLabels,
   roleCount,
-  focus,
   compact,
   openMarkets,
   cardSite,
@@ -117,7 +115,6 @@ export function SiteClusters({
   /** One name per spot, for what the map shows (see spots.ts). */
   spotLabels: SpotLabels;
   roleCount: number;
-  focus: Pick<MapFocus, "tint">;
   /** Under 960px: a phone's smaller circles, counts and notches (see marketRadius). */
   compact: boolean;
   /** The markets a market click opened, or null when none is open. */
@@ -133,17 +130,17 @@ export function SiteClusters({
   const open = useMemo(() => (openMarkets === null ? null : marketsInside(markets, openMarkets)), [markets, openMarkets]);
   // Each region's name, by its cluster id, once the clustering has told us (see nameCircle).
   const regionNames = useRef(new Map<number, { name: string; more: number }>());
-  const latest = useRef({ data, markets, spotLabels, focus, compact, open, onOpenMarkets, onSpotClick, onHover, regionNames: regionNames.current });
-  latest.current = { data, markets, spotLabels, focus, compact, open, onOpenMarkets, onSpotClick, onHover, regionNames: regionNames.current };
+  const latest = useRef({ data, markets, spotLabels, compact, open, onOpenMarkets, onSpotClick, onHover, regionNames: regionNames.current });
+  latest.current = { data, markets, spotLabels, compact, open, onOpenMarkets, onSpotClick, onHover, regionNames: regionNames.current };
 
   // Sources, icons and layers. isLoaded drops to false while a theme change
   // reloads the style, which discards all of them; this runs again after.
   useEffect(() => {
     if (!map || !isLoaded) return;
     const palette = readPalette();
-    const mk = marketStyle(latest.current.focus, palette, latest.current.compact);
+    const mk = marketStyle(palette, latest.current.compact);
     const ml = marketLayout(latest.current.compact);
-    const st = siteStyle(latest.current.focus, palette);
+    const st = siteStyle(palette);
     // Map text comes from the tile provider's glyphs; CARTO has no mono. The
     // blank ground (CARTO unreachable) has none, so no counts or names there.
     const text = Boolean(map.getStyle().glyphs);
@@ -529,12 +526,12 @@ export function SiteClusters({
     set(MARKET_NOTCHES, layout.notches);
   }, [map, isLoaded, compact]);
 
-  // Restyle in place when the tint, the theme or the mode changes.
+  // Restyle in place when the theme or the mode changes.
   useEffect(() => {
     if (!map || !isLoaded) return;
     const palette = readPalette();
-    const mk = marketStyle(focus, palette, compact);
-    const st = siteStyle(focus, palette);
+    const mk = marketStyle(palette, compact);
+    const st = siteStyle(palette);
     applyPaint(map, MARKET_CIRCLES, mk.circles);
     applyPaint(map, MARKET_COUNTS, mk.counts);
     applyPaint(map, MARKET_NAMES, mk.names);
@@ -546,7 +543,7 @@ export function SiteClusters({
     applyPaint(map, SITE_MARKS, st.marks);
     applyPaint(map, SITE_MARKS_OPEN, st.openMarks);
     applyPaint(map, SITE_NAMES, st.names);
-  }, [map, isLoaded, focus, resolvedTheme, compact]);
+  }, [map, isLoaded, resolvedTheme, compact]);
 
   return null;
 }

@@ -27,9 +27,9 @@ test("a project flag carries its year", () => {
   assert.equal(openingLabel("renovation", 2019, words), "RENOVATION · 2019");
 });
 
-test("with no year on record, or in construction (it opened after Cody left), the flag stands alone", () => {
+test("a site in construction carries the year it opened; with no year the flag stands alone", () => {
+  assert.equal(openingLabel("construction", 2025, words), "IN CONSTRUCTION · 2025");
   assert.equal(openingLabel("nso", null, words), "NSO");
-  assert.equal(openingLabel("construction", 2025, words), "IN CONSTRUCTION");
 });
 
 test("details read SKILL, then TOOLS, then AWARD, each value its own chip", () => {

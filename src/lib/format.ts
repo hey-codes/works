@@ -118,9 +118,9 @@ export function compactSqft(sqft: number): string {
 }
 
 /**
- * The project flag: its type, and its year where the records hold one. A site
- * in construction carries none: it opened after Cody left.
+ * The project flag: its type, and its year where the records hold one (for a
+ * site in construction, the year it opened, after Cody left; Cody, 2026-10-15).
  */
 export function openingLabel(opening: Opening, year: number | null, words: Record<Opening, string>): string {
-  return year === null || opening === "construction" ? words[opening] : `${words[opening]} · ${year}`;
+  return year === null ? words[opening] : `${words[opening]} · ${year}`;
 }

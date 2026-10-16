@@ -59,32 +59,32 @@ test("under 960px rows open and close on their own and nothing is picked", () =>
 test("a click ends the hover's preview, so clearing under the pointer shows every site", () => {
   const s = run({ type: "hover", pick: role(3) }, { type: "toggle", role: 3, single: true }, { type: "toggle", role: 3, single: true });
   assert.equal(s.hov, null);
-  assert.deepEqual(wide(s), { shown: null, frame: null, tint: [] });
+  assert.deepEqual(wide(s), { shown: null, frame: null });
 });
 
 test("with nothing picked or hovered the map shows and frames every site", () => {
-  assert.deepEqual(wide(initialAtlasState), { shown: null, frame: null, tint: [] });
+  assert.deepEqual(wide(initialAtlasState), { shown: null, frame: null });
 });
 
 test("a hover filters in place: its sites alone, the camera where it was", () => {
   const s = run({ type: "hover", pick: role(2) });
-  assert.deepEqual(wide(s), { shown: [2], frame: null, tint: [] });
+  assert.deepEqual(wide(s), { shown: [2], frame: null });
 });
 
 test("a hover previews over the pick, and the camera stays on the pick", () => {
   const s = run({ type: "toggle", role: 4, single: true }, { type: "hover", pick: role(2) });
-  assert.deepEqual(wide(s), { shown: [2], frame: [4], tint: [] });
+  assert.deepEqual(wide(s), { shown: [2], frame: [4] });
   assert.ok(samePick(shownPick(s), role(2)));
 });
 
 test("a system shows and frames every role that used it, ascending", () => {
   const s = run({ type: "pickSys", name: "FEXA" });
-  assert.deepEqual(wide(s), { shown: [0, 4], frame: [0, 4], tint: [] });
+  assert.deepEqual(wide(s), { shown: [0, 4], frame: [0, 4] });
 });
 
 test("the narrow layout never drives the map", () => {
   const s = run({ type: "toggle", role: 4, single: true }, { type: "hover", pick: role(2) });
-  assert.deepEqual(mapFocus(s, rolesOf, true), { shown: null, frame: null, tint: [] });
+  assert.deepEqual(mapFocus(s, rolesOf, true), { shown: null, frame: null });
 });
 
 test("the same hover twice leaves the state as it was", () => {

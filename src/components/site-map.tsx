@@ -134,12 +134,34 @@ function GroundCheck({ onFail }: { onFail: () => void }) {
 
 const LEGEND = projectTypes(SITE_POINTS);
 
+/** The red diamond, as the map draws a project. */
+function Diamond() {
+  return (
+    <svg aria-hidden="true" width="9" height="9" viewBox="0 0 9 9" className="shrink-0">
+      <path d="M4.5 0.5 8.5 4.5 4.5 8.5 0.5 4.5Z" fill="var(--red)" />
+    </svg>
+  );
+}
+
 /**
  * The key to the red diamond (Cody, 2026-10-15): the project types the records
  * hold, each beside the mark, under the zoom buttons. Static: it filters
- * nothing, and the pointer passes through it to the map.
+ * nothing, and the pointer passes through it to the map. Under 960px, where
+ * the map is small, it is one short line: the mark and the card's short names
+ * ("◆ NSO · IN CONSTRUCTION").
  */
-function Legend() {
+function Legend({ compact }: { compact: boolean }) {
+  if (compact) {
+    return (
+      <p
+        data-map-guard=""
+        className="border-border bg-background text-muted-foreground pointer-events-none absolute top-[106px] right-2 z-10 m-0 flex items-center gap-1.5 rounded-[4px] border px-2 py-1.5 font-mono text-[11px] leading-none font-medium tracking-[var(--track-label)] whitespace-nowrap pointer-fine:top-[82px]"
+      >
+        <Diamond />
+        {LEGEND.map((type) => RESUME_DATA.map.card.flags[type]).join(" · ")}
+      </p>
+    );
+  }
   return (
     <ul
       data-map-guard=""
@@ -147,9 +169,7 @@ function Legend() {
     >
       {LEGEND.map((type) => (
         <li key={type} className="flex items-center gap-1.5">
-          <svg aria-hidden="true" width="9" height="9" viewBox="0 0 9 9" className="shrink-0">
-            <path d="M4.5 0.5 8.5 4.5 4.5 8.5 0.5 4.5Z" fill="var(--red)" />
-          </svg>
+          <Diamond />
           {RESUME_DATA.map.legend[type]}
         </li>
       ))}
@@ -371,7 +391,6 @@ export default function SiteMap() {
         markets={markets}
         spotLabels={spotLabels}
         roleCount={ROLES.length}
-        focus={focus}
         compact={narrow}
         openMarkets={openMarkets}
         cardSite={spot?.sites.length === 1 ? (spot.sites[0]?.id ?? null) : null}
@@ -380,7 +399,7 @@ export default function SiteMap() {
         onHover={onHover}
       />
       {showHover ? <HoverName spot={hovered} /> : null}
-      <Legend />
+      <Legend compact={narrow} />
       <HonoluluInset points={data} ground={GROUND} blank={blank} />
       <BeforeAttribution>
         <Camera frame={focus.frame} onReset={clearMarkets} />

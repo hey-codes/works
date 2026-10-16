@@ -558,6 +558,17 @@
   overflow: hidden;
 }
 
+/* The map fills its frame by position, not by percentage height: under 960px
+   the frame's height comes from its aspect ratio and min-height, and WebKit
+   (Safari, every iPhone browser) resolved the map's 100% from the aspect ratio
+   alone, leaving the frame's lower third empty. Doubled, so it outranks
+   MapLibre's own `.maplibregl-map { position: relative }`, which loads later. */
+.map.map > * {
+  position: absolute;
+  inset: 0;
+  height: auto;
+}
+
 .caption {
   display: flex;
   flex-direction: column;
@@ -1392,20 +1403,6 @@
   background: var(--chip);
   padding: 4px 8px;
   border-radius: var(--radius-control);
-}
-
-/* The hover hint, only where something can hover and a row traces (from
-   960px), as the map's hint is. */
-@media (hover: none), (max-width: 959.98px) {
-  .stackHint {
-    display: none;
-  }
-}
-
-/* 05 Stack's hover hint ends its eyebrow line, muted, at the right. */
-.stackHint {
-  margin-left: auto;
-  color: var(--muted);
 }
 
 .stackGroup {

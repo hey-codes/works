@@ -2,7 +2,7 @@
 
 **Live at https://codymitch.works since 2026-10-15.** Vercel project `works` (team hey-codes-projects) serves the apex; `www` redirects (308) to it. GitHub `hey-codes/works` (private) holds the published history. Vercel Authentication covers every URL except the custom domain, so `*.vercel.app` previews need sign-in.
 
-**Shipping an update:** a push to `main` of `hey-codes/works` deploys straight to the live domain, so push only on Cody's go. Run `pnpm typecheck && pnpm test && pnpm check:data && pnpm build` and the private-details scan first. Publish main's tree as one new commit on top of the remote (`git commit-tree main^{tree} -p origin/main`, then `git branch -f publish <sha>` and `git push origin publish:main`). To look before going live, push a branch other than `main`: it deploys a preview behind sign-in.
+**Shipping an update:** a push to `main` of `hey-codes/works` deploys straight to the live domain, so push only on Cody's go. Run `pnpm typecheck && pnpm test && pnpm check:data && pnpm build` and the private-details scan first. Publish main's tree as one new commit on top of the remote (`git commit-tree main^{tree} -p origin/main`, then `git branch -f publish <sha>` and `git push origin publish:main`). To look before going live, push a branch other than `main`: it deploys a preview behind sign-in (the branch `preview`, at works-git-preview-hey-codes-projects.vercel.app). **Rollback:** there is no old project to fall back to; in Vercel, project `works`, Deployments, the previous production deployment's "Instant Rollback" puts it back on the domain at once.
 
 ## Open: to review
 
@@ -10,6 +10,7 @@
 
 - [ ] Resume PDF: the site launched without one (Cody, 2026-10-15). When the site-download version exists (no email or phone), add it to `public/` and set `pdf` in `src/data/resume-data.ts`; the header and slim bar then show the download link (`SHOW_PENDING` in `pdf-control.tsx` stays off)
 - [ ] J.Crew and Madewell scope: live at the 159 peak scope; 223 or 235 is a rebuild in career-hub (Cody, 2026-10-15)
+- [ ] Relocation and renovation sites: the types are built (legend, card flag, map mark); add the sites when Cody sends the list (name, brand, year), with `opening: "relocation"` or `"renovation"`
 - [ ] Location records: correct them when convenient, not as a blocker; the site is a website, not a database (Cody, 2026-10-15). Known guesses: seven department store shops set open, SoulCycle Walnut Creek set closed
 - [ ] Copy pass, only when Cody asks. Noted so far:
   - The tagline breaks "multi-" / "site" at 360; a non-breaking hyphen in the data would hold it
@@ -21,6 +22,8 @@
 
 ### Site
 
+- [ ] The map's framing keeps clear of Show every site and the zoom buttons but not of the legend (top right) or the Honolulu inset (bottom left), so either can sit over a few dots in some views; names under them are not drawn. Reserving room would shrink every fit (Cody accepted as is, 2026-10-15)
+- [ ] Check the page on a real iPhone: the Honolulu inset is a second live map (a second WebGL context)
 - [ ] MapLibre's dev bundles (about 5MB, `maplibre-gl-*-dev.mjs`) are emitted into the deploy though the site never loads them; trim them if the build allows
 - [ ] Share preview: check `public/og.png` (made 2026-10-13: the name and the red cursor) in a LinkedIn or iMessage preview now that the domain is live
 

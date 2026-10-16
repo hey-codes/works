@@ -104,7 +104,6 @@
 
 /* Press feedback eases in and lets go at once. */
 .iconButton:active,
-.footerIcon:active,
 .toggle:active {
   transform: scale(0.92);
   transition: transform 0.08s;
@@ -1423,6 +1422,35 @@
   border-bottom: 0;
 }
 
+/* The rule inside APPS that sets off the personal-only apps: a dashed
+   hairline with its muted label in the key's style (Cody, 2026-10-15). */
+.stackRule {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 12px 6px 0;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: var(--track-label);
+  color: var(--muted);
+}
+
+.stackRule::before,
+.stackRule::after {
+  content: "";
+  height: 0;
+  border-top: 1px dashed var(--edge);
+}
+
+.stackRule::before {
+  width: 16px;
+}
+
+.stackRule::after {
+  flex: 1;
+}
+
 .stackRows {
   display: flex;
   flex-direction: column;
@@ -1494,16 +1522,56 @@
 
 /* ---------- Footer ---------- */
 
+/* A bookend to the header (Cody, 2026-10-15): the wordmark and the two ways
+   to reach him on one line, then the colophon, quieter, under a hairline. */
 .footer {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  padding: 16px 0 48px;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px 0 48px;
   border-top: 1px solid var(--line);
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted);
+}
+
+.footerSign {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 24px;
+}
+
+.footerOuts {
+  display: flex;
+  gap: 20px;
+}
+
+/* LinkedIn and GitHub: the page's closing ask, blue with the out links' ↗,
+   the prose link's underline drawing in on hover. */
+.footerOut {
+  composes: proseLink;
+  position: relative;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.footerOut .outGlyph > svg {
+  transition: transform 0.12s var(--ease);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .footerOut:hover .outGlyph > svg,
+  .footerOut:focus-visible .outGlyph > svg {
+    transform: translate(2px, -2px);
+  }
+}
+
+/* The line is 19px tall; its target is 44px. */
+.footerOut::before {
+  content: "";
+  position: absolute;
+  inset: -13px -6px;
 }
 
 .printContact {
@@ -1512,27 +1580,29 @@
   flex-wrap: wrap;
 }
 
-/* UPDATED, BUILT and TYPE read as SPEC's key rows: its muted 11px key in one
-   column as wide as the widest, the values in the footer's muted 12px. */
-.footerRows {
+/* UPDATED, BUILT and TYPE in one quiet line: the key in SPEC's muted 11px
+   caps, the values muted 11px, each group kept whole where it can be. */
+.colophon {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
   margin: 0;
-  min-width: 0;
-  display: grid;
-  grid-template-columns: max-content minmax(0, 1fr);
-  gap: 4px 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 11px;
   line-height: 18px;
 }
 
-.footerRow {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: subgrid;
-  align-items: baseline;
+.colophonGroup {
+  display: inline-flex;
+  flex-wrap: wrap;
+  column-gap: 4px;
 }
 
-.footerRow dd {
-  margin: 0;
-  min-width: 0;
+.colophonKey {
+  margin-right: 4px;
+  font-weight: 500;
+  letter-spacing: var(--track-label);
 }
 
 .footerItem {
@@ -1540,7 +1610,7 @@
 }
 
 /* The prose link's underline idiom, in the footer's muted tone until hover
-   or focus, so the credits never compete with the header. */
+   or focus, so the credits never compete with the page. */
 .footerLink {
   composes: proseLink;
   color: var(--muted);
@@ -1553,55 +1623,6 @@
   background-size: 100% 1px, 100% 1px;
 }
 
-/* The icons sit at the end of the TYPE row, centred on its 18px line. */
-.footerLinks {
-  display: flex;
-  gap: 4px;
-  align-items: center;
-  align-self: flex-end;
-  /* Half the icon box less half the 18px row: (40 - 18) / 2, so the icons
-     centre on the last row's line. 44px boxes on touch take (44 - 18) / 2. */
-  margin-bottom: -11px;
-}
-
-.footerIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-control);
-  color: var(--muted);
-}
-
-.footerIcon:hover,
-.footerIcon:focus-visible {
-  color: var(--blue);
-  background: var(--soft);
-}
-
-/* Touch icons are 44px, so the centring margin grows with them. */
-@media (pointer: coarse) {
-  .footerLinks {
-    margin-bottom: -13px;
-  }
-}
-
-/* Phones: the rows take the width and the icons a row of their own at the
-   end, rather than squeezing TYPE onto two lines beside them. */
-@media (max-width: 479.98px) {
-  .footerRows {
-    flex-basis: 100%;
-  }
-
-  .footerLinks {
-    /* The 40px box has (40 - 16) / 2 = 12px of slack around its 16px glyph.
-       The top -8 hands back 8 of it, leaving the glyph 16px under the rows
-       beside the footer's 12px gap; the bottom -12 takes all of it. */
-    margin: -8px 0 -12px auto;
-  }
-}
-
 /* ---------- Breakpoints ---------- */
 
 @media (pointer: coarse) {
@@ -1609,8 +1630,7 @@
     min-height: 44px;
   }
 
-  .iconButton,
-  .footerIcon {
+  .iconButton {
     width: 44px;
     height: 44px;
   }

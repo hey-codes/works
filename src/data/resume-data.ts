@@ -383,6 +383,8 @@ export const RESUME_DATA: ResumeData = {
   // The STACK block. Each name maps to the employers (exact work[].company)
   // it was used at, or "Personal"; rows trace those roles on the map. A role's
   // TOOLS row in DETAILS is read from apps (Cody, 2026-10-15).
+  // Cody, 2026-10-15: personal-only apps sit under a rule inside APPS.
+  stackPersonal: "PERSONAL",
   tools: {
     cmms: {
       ServiceChannel: ["FENDI", "Balenciaga", "Dolce & Gabbana", "SoulCycle", "J.Crew / Madewell"],

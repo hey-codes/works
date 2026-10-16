@@ -166,6 +166,8 @@ export interface ResumeData {
   skills: readonly SkillGroup[];
   /** The STACK block: CMMS platforms and apps, each with where it was used. */
   tools: { cmms: UsedAt; apps: UsedAt };
+  /** The label on the rule in APPS that sets off the apps used only on his own. */
+  stackPersonal: string;
   projects: ReadonlyArray<{
     title: string;
     techStack: readonly string[];

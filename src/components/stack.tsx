@@ -36,14 +36,21 @@ function TracedRow({ name, at }: { name: string; at: readonly string[] }) {
   );
 }
 
-/** Roles in page order by their short names, then "Personal" last (his own use, no role). */
+/** An app used only on his own, with no role: it sits under the PERSONAL rule. */
+const personalOnly = (used: readonly string[]) => used.length > 0 && used.every((u) => u === PERSONAL);
+
+/**
+ * Roles in page order by their short names, then "Personal" last (his own use,
+ * no role). Under the PERSONAL rule a row names only the app, since the rule
+ * already says so.
+ */
 function StackRow({ name, used }: { name: string; used: readonly string[] }) {
   const { narrow } = useAtlas();
   const roles = systemRoles(RESUME_DATA, name).map((i) => {
     const w = RESUME_DATA.work[i];
     return w ? (w.short ?? w.company) : "";
   });
-  const at = used.includes(PERSONAL) ? [...roles, PERSONAL] : roles;
+  const at = personalOnly(used) ? [] : used.includes(PERSONAL) ? [...roles, PERSONAL] : roles;
   return (
     <li>
       {/* An app used only on his own has no role to trace, so it is plain
@@ -88,9 +95,23 @@ export function Stack() {
         <div key={grp.key} className={styles.stackGroup}>
           <span className={styles.key}>{grp.key}</span>
           <ul className={styles.stackRows}>
-            {Object.entries(grp.used).map(([name, used]) => (
-              <StackRow key={name} name={name} used={used} />
-            ))}
+            {/* The apps used at work first, A to Z; then, under a dashed rule
+                labelled PERSONAL, the apps used only on his own (Cody, 2026-10-15). */}
+            {Object.entries(grp.used)
+              .filter(([, used]) => !personalOnly(used))
+              .map(([name, used]) => (
+                <StackRow key={name} name={name} used={used} />
+              ))}
+            {Object.values(grp.used).some(personalOnly) ? (
+              <li className={styles.stackRule}>
+                <span>{RESUME_DATA.stackPersonal}</span>
+              </li>
+            ) : null}
+            {Object.entries(grp.used)
+              .filter(([, used]) => personalOnly(used))
+              .map(([name, used]) => (
+                <StackRow key={name} name={name} used={used} />
+              ))}
           </ul>
         </div>
       ))}

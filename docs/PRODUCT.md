@@ -38,6 +38,7 @@ Voice is first-person, plain, a little warm ("the receipts", "sales floor to FM"
 - **Four stat-strip figures:** 13 Years in FM, 400+ Locations, 2.8M+ Sq ft managed, 9 Brands. No dollar figures anywhere on the site. (Cody, 2026-10-14; replaces 2.9M+ and the managed-spend figure.)
 - **Filtering dims, never hides.** Tags are clickable to trace a system across roles; the page keeps its shape. The map is the one exception: a pick (a role, a CMMS name or a STACK row, one at a time) shows its sites alone, a hover previews it in place and a click frames it (Cody, 2026-10-14 and 2026-10-15).
 - **Print stays conservative:** no marginalia, no motion, everything expanded.
+- **Analytics: Vercel Web Analytics only** (`<Analytics />` in `layout.tsx`). Page views, referrers, country and device in aggregate; no cookies, no IP addresses, nothing personal, so no banner. No custom click events (Hobby plan; the dashboard keeps one month). No other tracker (Cody, 2026-10-15).
 
 ## Identity lock (Cody, 2026-09-28: "Never change these")
 

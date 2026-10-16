@@ -22,6 +22,7 @@
 
 ### Site
 
+- [ ] Web Analytics: Cody enables it in Vercel (project `works`, Analytics, Enable), then the `<Analytics />` commit ships; after the deploy, a visit to the live site should show in the Analytics tab within a minute or so
 - [ ] The map's framing keeps clear of Show every site and the zoom buttons but not of the legend (top right) or the Honolulu inset (bottom left), so either can sit over a few dots in some views; names under them are not drawn. Reserving room would shrink every fit (Cody accepted as is, 2026-10-15)
 - [ ] Check the page on a real iPhone: the Honolulu inset is a second live map (a second WebGL context)
 - [ ] MapLibre's dev bundles (about 5MB, `maplibre-gl-*-dev.mjs`) are emitted into the deploy though the site never loads them; trim them if the build allows

@@ -59,6 +59,12 @@
   animation: none;
 }
 
+/* The slim bar's cursor blinks three times each time the bar slides in, then
+   holds still, so it never pulses beside the text being read (Cody, 2026-10-15). */
+.slim[data-visible="true"] .slimWordmark .cursor {
+  animation: cur 1.1s steps(1) 3;
+}
+
 @keyframes cur {
   50% {
     opacity: 0;
@@ -98,7 +104,6 @@
 
 /* Press feedback eases in and lets go at once. */
 .iconButton:active,
-.footerIcon:active,
 .toggle:active {
   transform: scale(0.92);
   transition: transform 0.08s;
@@ -485,7 +490,8 @@
 
 .stats {
   margin-top: 24px;
-  border-top: 2px solid var(--red);
+  /* A gray hairline: the pen line under the name is the hero's one red mark (Cody, 2026-10-15). */
+  border-top: 1px solid var(--line);
   padding-top: 12px;
   container-type: inline-size;
 }
@@ -552,6 +558,17 @@
   overflow: hidden;
 }
 
+/* The map fills its frame by position, not by percentage height: under 960px
+   the frame's height comes from its aspect ratio and min-height, and WebKit
+   (Safari, every iPhone browser) resolved the map's 100% from the aspect ratio
+   alone, leaving the frame's lower third empty. Doubled, so it outranks
+   MapLibre's own `.maplibregl-map { position: relative }`, which loads later. */
+.map.map > * {
+  position: absolute;
+  inset: 0;
+  height: auto;
+}
+
 .caption {
   display: flex;
   flex-direction: column;
@@ -577,9 +594,8 @@
 
 .captionSub {
   display: flex;
-  /* A link or a tier chip after the figures takes the next line where the
-     column is narrow. Rows sit 6px apart so a chip's hover line clears the
-     chip below it. */
+  /* A figure that does not fit takes the next line where the column is
+     narrow; the lines sit 6px apart. */
   flex-wrap: wrap;
   gap: 6px 8px;
   align-items: baseline;
@@ -617,96 +633,6 @@
 
 .captionHint[data-off] {
   visibility: hidden;
-}
-
-/* The open role's opening tiers in the caption, flagged as the map's card
-   flags them (red; solid opened, outlined supported, dashed pre-opening and
-   in progress), each a button that steps the map through that tier's sites.
-   They end the figures line, each chip its own item of the line's wrap, so
-   OPENED · 6 stays on the line where it fits and only a chip with no room
-   drops below (Cody, 2026-10-15). The flag stays red under the pointer and
-   the focus ring; blue marks only the interaction: a 1px blue line 2px under
-   the chip on hover, the same on the solid chip and the outlined ones, and
-   focus takes the blue ring. */
-.captionTiers {
-  display: contents;
-}
-
-.openingFlag {
-  composes: label;
-  position: relative;
-  line-height: 1;
-  padding: 4px 6px;
-  color: var(--red);
-  background: none;
-  border: 1px solid var(--red);
-  border-radius: var(--radius-control);
-  /* A button: the caption's family, the label's size and weight. */
-  font-family: inherit;
-  cursor: pointer;
-}
-
-.openingFlag::after {
-  content: "";
-  position: absolute;
-  left: -1px;
-  right: -1px;
-  bottom: -4px;
-  height: 1px;
-  background: var(--blue);
-  visibility: hidden;
-}
-
-.openingFlag:hover::after {
-  visibility: visible;
-}
-
-/* The caption's chips are 21px; their target is 27px, stopping short of the
-   chip on the next line (6px down) and the next chip (8px along). */
-button.openingFlag::before {
-  content: "";
-  position: absolute;
-  inset: -3px -4px;
-}
-
-.openingFlag:active {
-  transform: translateY(1px);
-}
-
-.openingFlag[data-tier="opened"] {
-  color: var(--bg);
-  background: var(--red);
-}
-
-.openingFlag[data-tier="pre-opening"],
-.openingFlag[data-tier="in-progress"] {
-  border-style: dashed;
-}
-
-.clear {
-  position: relative;
-  background: none;
-  border: 0;
-  padding: 0;
-  font: inherit;
-  color: var(--blue);
-  cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-/* The line is 17px tall; its target is 25px, and 31px on touch, which stops
-   short of the caption's next line 6px down (a tier chip may sit there). */
-.clear::before {
-  content: "";
-  position: absolute;
-  inset: -4px;
-}
-
-@media (pointer: coarse) {
-  .clear::before {
-    inset: -7px -4px;
-  }
 }
 
 /* ---------- Sections ---------- */
@@ -827,11 +753,18 @@ button.openingFlag::before {
   border-bottom: 1px solid var(--line);
   background: var(--row-bg);
   box-shadow: -12px 0 0 0 var(--row-bg);
-  transition: background 0.15s, box-shadow 0.15s;
 }
 
-.role[data-ground="true"] {
+/* An open record keeps the ground. A hovered row takes it too, at once and
+   nothing else: no color, no line, no motion (Cody, 2026-10-15). */
+.role[data-open="true"] {
   --row-bg: var(--ground);
+}
+
+@media (hover: hover) {
+  .role:hover {
+    --row-bg: var(--ground);
+  }
 }
 
 /* A role off the traced system steps back by color, not opacity, so it stays
@@ -865,15 +798,13 @@ button.openingFlag::before {
   transition: transform 0.15s var(--ease);
 }
 
-.role[data-rail="true"] > .rail,
 .stackRow[data-active="true"] > .rail {
   transform: none;
 }
 
-/* An open record keeps its rail, in red, whatever the mouse does and however
-   many rows are open: its start marked, as the section dash and the stat rule
-   mark theirs (Cody, 2026-10-15). A closed row's rail is blue while hovered,
-   focused or traced. */
+/* An open record keeps its rail, in red, whatever the mouse does: its start
+   marked, as the section dash marks a section's (Cody, 2026-10-15). A closed
+   role row has no rail. */
 .role[data-open="true"] > .rail {
   transform: none;
   background: var(--red);
@@ -911,16 +842,6 @@ button.openingFlag::before {
   line-height: 1.15;
   color: var(--role-ink);
   transition: color 0.2s;
-}
-
-.role[data-active="true"] .company {
-  color: var(--blue);
-}
-
-/* An open record's name stays ink, hovered and selected too, so its red pen
-   line never sits under a blue name (Cody, 2026-10-15). Its ↗ stays blue. */
-.role[data-open="true"] .company {
-  color: var(--role-ink);
 }
 
 /* The ↗ after a company or school name: the brand's or school's own site.
@@ -1023,10 +944,12 @@ button.openingFlag::before {
   display: none;
 }
 
+/* A CMMS name filters the map; it goes nowhere, so it does not look like a
+   link: blue with a dotted underline, solid on hover and while picked (Cody,
+   2026-10-15). The ↗ links keep the solid line that draws in. */
 .sysButton {
   position: relative;
-  /* The underline draws left to right on hover and holds while pinned. */
-  background: linear-gradient(currentColor, currentColor) no-repeat 0 100% / 0 1px;
+  background: none;
   border: 0;
   padding: 0;
   font: inherit;
@@ -1034,8 +957,9 @@ button.openingFlag::before {
   text-transform: inherit;
   color: var(--role-link, var(--blue));
   cursor: pointer;
-  text-decoration: none;
-  transition: color 0.2s, background-size 0.18s var(--ease);
+  text-decoration: underline dotted 1px;
+  text-underline-offset: 3px;
+  transition: color 0.2s;
 }
 
 /* The label is one line of small type; the target around it is not. */
@@ -1045,14 +969,13 @@ button.openingFlag::before {
   inset: -12px -4px;
 }
 
-.sysButton:active,
-.clear:active {
+.sysButton:active {
   transform: translateY(1px);
 }
 
 .sysButton:hover,
 .sysButton[aria-pressed="true"] {
-  background-size: 100% 1px;
+  text-decoration-style: solid;
 }
 
 /* Under 960px the script renders the name as text (nothing traces there);
@@ -1060,7 +983,7 @@ button.openingFlag::before {
 @media (max-width: 959.98px) {
   .sysButton {
     color: inherit;
-    background: none;
+    text-decoration: none;
     cursor: default;
   }
 }
@@ -1482,20 +1405,6 @@ button.openingFlag::before {
   border-radius: var(--radius-control);
 }
 
-/* The hover hint, only where something can hover and a row traces (from
-   960px), as the map's hint is. */
-@media (hover: none), (max-width: 959.98px) {
-  .stackHint {
-    display: none;
-  }
-}
-
-/* 05 Stack's hover hint ends its eyebrow line, muted, at the right. */
-.stackHint {
-  margin-left: auto;
-  color: var(--muted);
-}
-
 .stackGroup {
   display: grid;
   grid-template-columns: clamp(72px, 20%, 120px) minmax(0, 1fr);
@@ -1508,6 +1417,13 @@ button.openingFlag::before {
    its own (two rules 32px apart read as a double line). */
 .stackGroup:last-child {
   border-bottom: 0;
+}
+
+/* The dashed rule inside APPS that sets off the apps used only on his own
+   (Cody, 2026-10-15). It spans the rows' columns, short of their right edge. */
+.stackRule {
+  margin: 6px 12px 6px 0;
+  border-top: 1px dashed var(--edge);
 }
 
 .stackRows {
@@ -1581,16 +1497,56 @@ button.openingFlag::before {
 
 /* ---------- Footer ---------- */
 
+/* A bookend to the header (Cody, 2026-10-15): the wordmark and the two ways
+   to reach him on one line, then the colophon, quieter, under a hairline. */
 .footer {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  padding: 16px 0 48px;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px 0 48px;
   border-top: 1px solid var(--line);
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted);
+}
+
+.footerSign {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 24px;
+}
+
+.footerOuts {
+  display: flex;
+  gap: 20px;
+}
+
+/* LinkedIn and GitHub: the page's closing ask, blue with the out links' ↗,
+   the prose link's underline drawing in on hover. */
+.footerOut {
+  composes: proseLink;
+  position: relative;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.footerOut .outGlyph > svg {
+  transition: transform 0.12s var(--ease);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .footerOut:hover .outGlyph > svg,
+  .footerOut:focus-visible .outGlyph > svg {
+    transform: translate(2px, -2px);
+  }
+}
+
+/* The line is 19px tall; its target is 44px. */
+.footerOut::before {
+  content: "";
+  position: absolute;
+  inset: -13px -6px;
 }
 
 .printContact {
@@ -1599,27 +1555,29 @@ button.openingFlag::before {
   flex-wrap: wrap;
 }
 
-/* UPDATED, BUILT and TYPE read as SPEC's key rows: its muted 11px key in one
-   column as wide as the widest, the values in the footer's muted 12px. */
-.footerRows {
+/* UPDATED, BUILT and TYPE in one quiet line: the key in SPEC's muted 11px
+   caps, the values muted 11px, each group kept whole where it can be. */
+.colophon {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
   margin: 0;
-  min-width: 0;
-  display: grid;
-  grid-template-columns: max-content minmax(0, 1fr);
-  gap: 4px 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 11px;
   line-height: 18px;
 }
 
-.footerRow {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: subgrid;
-  align-items: baseline;
+.colophonGroup {
+  display: inline-flex;
+  flex-wrap: wrap;
+  column-gap: 4px;
 }
 
-.footerRow dd {
-  margin: 0;
-  min-width: 0;
+.colophonKey {
+  margin-right: 4px;
+  font-weight: 500;
+  letter-spacing: var(--track-label);
 }
 
 .footerItem {
@@ -1627,7 +1585,7 @@ button.openingFlag::before {
 }
 
 /* The prose link's underline idiom, in the footer's muted tone until hover
-   or focus, so the credits never compete with the header. */
+   or focus, so the credits never compete with the page. */
 .footerLink {
   composes: proseLink;
   color: var(--muted);
@@ -1640,55 +1598,6 @@ button.openingFlag::before {
   background-size: 100% 1px, 100% 1px;
 }
 
-/* The icons sit at the end of the TYPE row, centred on its 18px line. */
-.footerLinks {
-  display: flex;
-  gap: 4px;
-  align-items: center;
-  align-self: flex-end;
-  /* Half the icon box less half the 18px row: (40 - 18) / 2, so the icons
-     centre on the last row's line. 44px boxes on touch take (44 - 18) / 2. */
-  margin-bottom: -11px;
-}
-
-.footerIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-control);
-  color: var(--muted);
-}
-
-.footerIcon:hover,
-.footerIcon:focus-visible {
-  color: var(--blue);
-  background: var(--soft);
-}
-
-/* Touch icons are 44px, so the centring margin grows with them. */
-@media (pointer: coarse) {
-  .footerLinks {
-    margin-bottom: -13px;
-  }
-}
-
-/* Phones: the rows take the width and the icons a row of their own at the
-   end, rather than squeezing TYPE onto two lines beside them. */
-@media (max-width: 479.98px) {
-  .footerRows {
-    flex-basis: 100%;
-  }
-
-  .footerLinks {
-    /* The 40px box has (40 - 16) / 2 = 12px of slack around its 16px glyph.
-       The top -8 hands back 8 of it, leaving the glyph 16px under the rows
-       beside the footer's 12px gap; the bottom -12 takes all of it. */
-    margin: -8px 0 -12px auto;
-  }
-}
-
 /* ---------- Breakpoints ---------- */
 
 @media (pointer: coarse) {
@@ -1696,8 +1605,7 @@ button.openingFlag::before {
     min-height: 44px;
   }
 
-  .iconButton,
-  .footerIcon {
+  .iconButton {
     width: 44px;
     height: 44px;
   }

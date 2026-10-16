@@ -16,7 +16,6 @@ import {
   NAME_ANCHORS,
   NOTCH_DISC,
   NOTCH_ICON,
-  NOTCH_ICONS,
   NOTCH_OUT,
   NOTCH_SIZE,
   nameOffset,
@@ -42,11 +41,10 @@ test("a region circle sums its markets' sites and roles and spans their boxes", 
   assert.deepEqual(props.r1, ["+", ["get", "r1"]]);
 });
 
-test("with no focus, market circles are plain ink", () => {
-  const m = marketStyle({ tint: [] }, palette, false);
+test("market circles are plain ink, their counts in the ground, their names muted", () => {
+  const m = marketStyle(palette, false);
   assert.equal(m.circles["circle-color"], "#111");
   assert.deepEqual(m.circles["circle-opacity"], ["step", ["zoom"], 0.75, CITY_ZOOM, 0]);
-  assert.equal(m.circles["circle-stroke-width"], 0);
   assert.equal(m.counts["text-color"], "#fff");
   assert.equal(m.names["text-color"], "#777");
 });
@@ -60,7 +58,7 @@ test("circles draw by sites, then by feature id, and the id never outweighs a si
 });
 
 test("a count is hidden, not moved, where its circle is marked covered", () => {
-  const m = marketStyle({ tint: [] }, palette, false);
+  const m = marketStyle(palette, false);
   assert.deepEqual(m.counts["text-opacity"], ["case", ["boolean", ["feature-state", "covered"], false], 0, 1]);
 });
 
@@ -73,7 +71,7 @@ test("a market circle is 8px under 10 sites, 11px under 50, 15px from 50; on pho
 
 test("the circle paint steps on sites exactly as marketRadius does, in both modes, and swaps at once", () => {
   for (const compact of [false, true]) {
-    const { circles } = marketStyle({ tint: [] }, palette, compact);
+    const { circles } = marketStyle(palette, compact);
     // MapLibre's step: the base below the first stop, else the output of the last stop passed.
     const [op, input, base, ...stops] = circles["circle-radius"] as [string, unknown, number, ...number[]];
     assert.equal(op, "step");
@@ -91,40 +89,26 @@ test("the circle paint steps on sites exactly as marketRadius does, in both mode
 /** Whether an expression uses an operator anywhere inside it. */
 const uses = (expr: unknown, op: string): boolean => Array.isArray(expr) && (expr[0] === op || expr.some((e) => uses(e, op)));
 
-test("market circles and their rings step out at city zoom, by the camera's zoom alone", () => {
-  // A ring is drawn while either opacity is above 0, and a tinted ring's width reads the circle's data.
-  for (const tint of [[], [2, 7]]) {
-    const { circles } = marketStyle({ tint }, palette, false);
-    assert.deepEqual(circles["circle-opacity"], ["step", ["zoom"], 0.75, CITY_ZOOM, 0]);
-    assert.deepEqual(circles["circle-stroke-opacity"], ["step", ["zoom"], 1, CITY_ZOOM, 0]);
-    for (const op of ["get", "feature-state"]) {
-      assert.equal(uses(circles["circle-opacity"], op), false, op);
-      assert.equal(uses(circles["circle-stroke-opacity"], op), false, op);
-    }
-  }
+test("market circles step out at city zoom, by the camera's zoom alone", () => {
+  const { circles } = marketStyle(palette, false);
+  assert.deepEqual(circles["circle-opacity"], ["step", ["zoom"], 0.75, CITY_ZOOM, 0]);
+  for (const op of ["get", "feature-state"]) assert.equal(uses(circles["circle-opacity"], op), false, op);
 });
 
-test("a tinted role rings, in blue, the circles that hold its sites", () => {
-  const m = marketStyle({ tint: [2, 7] }, palette, false);
-  assert.equal(m.circles["circle-stroke-color"], "#00f");
-  assert.deepEqual(m.circles["circle-stroke-width"], ["case", [">", ["+", ["get", "r2"], ["get", "r7"]], 0], 2, 0]);
-});
-
-test("plain sites are ink dots, blue for a tinted role", () => {
-  assert.equal(siteStyle({ tint: [] }, palette).dots["circle-color"], "#111");
-  const tinted = ["case", ["in", ["get", "role"], ["literal", [3]]], "#00f", "#111"];
-  assert.deepEqual(siteStyle({ tint: [3] }, palette).dots["circle-color"], tinted);
-  assert.deepEqual(siteStyle({ tint: [3] }, palette).openDots["circle-color"], tinted);
+test("circles carry no ring and plain sites are ink dots: a pick filters, never tints", () => {
+  assert.equal(marketStyle(palette, false).circles["circle-stroke-width"], undefined);
+  assert.equal(siteStyle(palette).dots["circle-color"], "#111");
+  assert.equal(siteStyle(palette).openDots["circle-color"], "#111");
 });
 
 test("site names are ink on a halo of the ground", () => {
-  const s = siteStyle({ tint: [] }, palette);
+  const s = siteStyle(palette);
   assert.equal(s.names["text-color"], "#111");
   assert.equal(s.names["text-halo-color"], "#fff");
 });
 
 test("the rest of the dots, their rings and marks are drawn from city zoom; the open markets' at any zoom", () => {
-  const s = siteStyle({ tint: [] }, palette);
+  const s = siteStyle(palette);
   assert.deepEqual(s.dots["circle-opacity"], fromCityZoom(0.9));
   assert.deepEqual(s.dots["circle-stroke-opacity"], fromCityZoom(1));
   assert.deepEqual(s.marks["icon-opacity"], fromCityZoom(1));
@@ -134,18 +118,14 @@ test("the rest of the dots, their rings and marks are drawn from city zoom; the 
 });
 
 test("an open market's dots look like the rest once drawn", () => {
-  const { dots, openDots } = siteStyle({ tint: [2] }, palette);
+  const { dots, openDots } = siteStyle(palette);
   const same = (paint: Record<string, unknown>) => Object.fromEntries(Object.entries(paint).filter(([k]) => !k.endsWith("-opacity")));
   assert.deepEqual(same(openDots), same(dots));
 });
 
-test("each opening tier gets its own shape: diamond, ring, dashed ring", () => {
-  assert.deepEqual(MARK_ICON, ["match", ["get", "opening"], "opened", "mark-opened", "supported", "mark-supported", "mark-dashed"]);
-});
-
-test("a notch shows the strongest tier inside: diamond, ring, dashed ring", () => {
-  assert.deepEqual(NOTCH_ICONS, { opened: "notch-opened", supported: "notch-supported", dashed: "notch-dashed" });
-  assert.deepEqual(NOTCH_ICON, ["match", ["get", "tier"], 3, "notch-opened", 2, "notch-supported", "notch-dashed"]);
+test("every project type wears the one red diamond, on a site and as a circle's notch", () => {
+  assert.equal(MARK_ICON, "mark-project");
+  assert.equal(NOTCH_ICON, "notch-project");
   assert.deepEqual(HAS_TIER, [">", ["get", "tier"], 0]);
 });
 
@@ -200,7 +180,7 @@ test("the notch offset steps on sites exactly as notchOffset does, through the i
 });
 
 test("notches step out at city zoom with the circles, by the camera's zoom alone", () => {
-  for (const { compact } of MODES) assert.deepEqual(marketStyle({ tint: [] }, palette, compact).notches, { "icon-opacity": underCityZoom(1) });
+  for (const { compact } of MODES) assert.deepEqual(marketStyle(palette, compact).notches, { "icon-opacity": underCityZoom(1) });
 });
 
 test("a notch's disc clears its circle's count: one digit on a desktop 8px circle, two on a phone's, three on the biggest", () => {
@@ -226,7 +206,7 @@ test("counts are 12px on the desktop, 11px on phones, where circles under 10 sit
   // Hidden by opacity, so the count is still placed and no name crosses the circle.
   assert.deepEqual(countOpacity(true), ["case", ["any", covered, ["<", ["get", "sites"], 10]], 0, 1]);
   for (const { compact } of MODES) {
-    const { counts } = marketStyle({ tint: [] }, palette, compact);
+    const { counts } = marketStyle(palette, compact);
     assert.deepEqual(counts["text-opacity"], countOpacity(compact));
     assert.deepEqual(counts["text-opacity-transition"], { duration: 0, delay: 0 });
   }

@@ -1,85 +1,29 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { RESUME_DATA } from "../data/resume-data.ts";
-import { openingsByRole, openingTiers, portfolioTiers } from "./openings.ts";
+import { PROJECT_ORDER, projectTypes } from "./openings.ts";
+import { pointsFor, SITE_POINTS } from "./site-points.ts";
 
-const ROLES = RESUME_DATA.work;
-const rows = openingsByRole(ROLES.length);
-const of = (company: string) => rows[ROLES.findIndex((w) => w.company === company)] ?? [];
+const role = (company: string) => RESUME_DATA.work.findIndex((w) => w.company === company);
+const count = (type: string) => SITE_POINTS.features.filter((f) => f.properties.opening === type).length;
 
-test("each role's opening rows list its opening sites from the map records", () => {
-  assert.equal(rows.length, ROLES.length);
-  assert.deepEqual(Object.fromEntries(ROLES.map((w, i) => [w.company, rows[i]?.length])), {
-    Industrious: 0,
-    Independent: 0,
-    Bathhouse: 0,
-    Balenciaga: 4,
-    "Rivian Automotive": 10,
-    FENDI: 7,
-    "Dolce & Gabbana": 5,
-    SoulCycle: 14,
-    "J.Crew / Madewell": 5,
-  });
+test("the records hold 37 new site openings and 8 sites in construction (Cody, 2026-10-15)", () => {
+  assert.equal(count("nso"), 37);
+  assert.equal(count("construction"), 8);
+  assert.equal(count("relocation") + count("renovation"), 0);
 });
 
-test("Rivian's opening rows hold its caption's opened sites, and the pre-openings beside them", () => {
-  const rivian = ROLES.find((w) => w.company === "Rivian Automotive");
-  const band = of("Rivian Automotive");
-  assert.equal(band.filter((r) => r.opening === "opened").length, rivian?.sites);
-  assert.equal(band.filter((r) => r.opening === "pre-opening").length, 4);
+test("the legend names only the project types the records hold, in its order", () => {
+  assert.deepEqual(projectTypes(SITE_POINTS), ["nso", "construction"]);
+  assert.deepEqual(PROJECT_ORDER, ["nso", "construction", "relocation", "renovation"]);
 });
 
-test("rows run newest opening year first, an undated tier after the dated, then the records' order", () => {
-  for (const band of rows) {
-    for (let i = 1; i < band.length; i++) {
-      const a = band[i - 1];
-      const b = band[i];
-      if (!a || !b) continue;
-      if (a.openedYear === b.openedYear) assert.ok(a.id < b.id, `${a.id} before ${b.id}`);
-      else if (a.openedYear === null) assert.fail(`undated ${a.id} before dated ${b.id}`);
-      else if (b.openedYear !== null) assert.ok(a.openedYear > b.openedYear, `${a.id} before ${b.id}`);
-    }
-  }
+test("Rivian's six openings are its new site openings, as its copy counts them", () => {
+  const rivian = pointsFor(role("Rivian Automotive")).features;
+  assert.equal(rivian.filter((f) => f.properties.opening === "nso").length, RESUME_DATA.work[role("Rivian Automotive")]?.sites);
+  assert.equal(rivian.filter((f) => f.properties.opening === "construction").length, 4);
 });
 
-test("an opening row carries its site's id, name, flag and year, and nothing else", () => {
-  const first = of("FENDI")[0];
-  assert.deepEqual(Object.keys(first ?? {}).sort(), ["id", "name", "openedYear", "opening"]);
-});
-
-test("a role's opening tiers, in the flags' order, each site newest first", () => {
-  const role = (name: string) => ROLES.findIndex((w) => w.company === name);
-  const rivian = openingTiers(role("Rivian Automotive"));
-  assert.deepEqual(rivian.map((t) => [t.opening, t.sites.length]), [
-    ["opened", 6],
-    ["pre-opening", 4],
-  ]);
-  assert.deepEqual(openingTiers(role("SoulCycle")).map((t) => t.opening), ["supported"]);
-  assert.deepEqual(openingTiers(role("Industrious")), []);
-  // Within a tier, the band's order (newest opening year first).
-  const flat = openingTiers(role("FENDI")).flatMap((t) => t.sites.map((s) => s.id));
-  const band = openingsByRole(ROLES.length)[role("FENDI")]?.map((r) => r.id) ?? [];
-  assert.deepEqual([...flat].sort(), [...band].sort());
-  // And each tier keeps the band's order among its own sites.
-  for (const name of ["FENDI", "Rivian Automotive", "SoulCycle"]) {
-    const rows = openingsByRole(ROLES.length)[role(name)] ?? [];
-    for (const t of openingTiers(role(name))) {
-      assert.deepEqual(
-        t.sites.map((s) => s.id),
-        rows.filter((r) => r.opening === t.opening).map((r) => r.id),
-      );
-    }
-  }
-});
-
-test("the portfolio's tiers hold every opening site once, each tier newest opening first", () => {
-  const roles = RESUME_DATA.work.length;
-  const tiers = portfolioTiers(roles);
-  const all = openingsByRole(roles).flat();
-  assert.equal(tiers.reduce((n, t) => n + t.sites.length, 0), all.length);
-  for (const t of tiers) {
-    const years = t.sites.map((s) => all.find((r) => r.id === s.id)?.openedYear ?? null);
-    const dated = years.filter((y): y is number => y !== null);
-    assert.deepEqual(dated, [...dated].sort((a, b) => b - a), t.opening);
-  }
+test("every project type has its flag copy", () => {
+  for (const type of PROJECT_ORDER) assert.ok(RESUME_DATA.map.card.flags[type], type);
 });

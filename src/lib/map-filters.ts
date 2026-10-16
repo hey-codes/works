@@ -65,4 +65,4 @@ export function marketFilter(open: readonly string[] | null): unknown {
  * The tiers are spelled out because a plain site keeps `opening: null` where
  * the layer filters run, and `has` is true for a null value.
  */
-export const HAS_OPENING: unknown = ["in", ["get", "opening"], ["literal", ["opened", "supported", "pre-opening", "in-progress"]]];
+export const HAS_OPENING: unknown = ["in", ["get", "opening"], ["literal", ["nso", "construction", "relocation", "renovation"]]];

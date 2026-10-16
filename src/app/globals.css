@@ -123,7 +123,7 @@ a:hover {
 
 /* Without JavaScript (the head script sets data-js), controls that would do
    nothing are not shown: the map frame (its caption stays, as when WebGL
-   fails), the theme toggle, the PDF note and STACK's hover hint. */
+   fails), the theme toggle and the PDF note. */
 :root:not([data-js]) [data-needs-js] {
   display: none !important;
 }

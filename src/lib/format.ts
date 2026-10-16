@@ -117,7 +117,10 @@ export function compactSqft(sqft: number): string {
   return tenths < 10 ? `${tenths}K` : `${Math.round(sqft / 1000)}K`;
 }
 
-/** The opening flag: Cody's part, and the year the site opened when it is on record. */
+/**
+ * The project flag: its type, and its year where the records hold one (for a
+ * site in construction, the year it opened, after Cody left; Cody, 2026-10-15).
+ */
 export function openingLabel(opening: Opening, year: number | null, words: Record<Opening, string>): string {
   return year === null ? words[opening] : `${words[opening]} · ${year}`;
 }

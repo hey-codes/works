@@ -36,6 +36,9 @@ function TracedRow({ name, at }: { name: string; at: readonly string[] }) {
   );
 }
 
+/** An app used only on his own, with no role: it sits under the dashed rule. */
+const personalOnly = (used: readonly string[]) => used.length > 0 && used.every((u) => u === PERSONAL);
+
 /** Roles in page order by their short names, then "Personal" last (his own use, no role). */
 function StackRow({ name, used }: { name: string; used: readonly string[] }) {
   const { narrow } = useAtlas();
@@ -75,22 +78,26 @@ export function Stack() {
   ];
   return (
     <section id="s5" className={styles.section}>
-      <SectionHead
-        eyebrow="05"
-        title="Stack"
-        aside={
-          <span data-noprint="" data-needs-js="" className={styles.stackHint}>
-            HOVER A ROW TO TRACE IT ON THE MAP
-          </span>
-        }
-      />
+      <SectionHead eyebrow="05" title="Stack" />
       {stack.map((grp) => (
         <div key={grp.key} className={styles.stackGroup}>
           <span className={styles.key}>{grp.key}</span>
           <ul className={styles.stackRows}>
-            {Object.entries(grp.used).map(([name, used]) => (
-              <StackRow key={name} name={name} used={used} />
-            ))}
+            {/* The apps used at work first, A to Z; then, under a dashed rule,
+                the apps used only on his own (Cody, 2026-10-15). */}
+            {Object.entries(grp.used)
+              .filter(([, used]) => !personalOnly(used))
+              .map(([name, used]) => (
+                <StackRow key={name} name={name} used={used} />
+              ))}
+            {Object.values(grp.used).some(personalOnly) ? (
+              <li className={styles.stackRule} aria-hidden="true" />
+            ) : null}
+            {Object.entries(grp.used)
+              .filter(([, used]) => personalOnly(used))
+              .map(([name, used]) => (
+                <StackRow key={name} name={name} used={used} />
+              ))}
           </ul>
         </div>
       ))}

@@ -1,53 +1,40 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useReducer, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useReducer } from "react";
 import { RESUME_DATA } from "@/data/resume-data";
-import { type AtlasState, atlasReducer, initialAtlasState, litRoles, type MapFocus, mapFocus, selectedRole } from "@/lib/atlas-reducer";
+import { atlasReducer, initialAtlasState, type MapFocus, mapFocus, type Pick, pickRoles, samePick, selectedRole, shownPick } from "@/lib/atlas-reducer";
 import { systemRoles } from "@/lib/format";
 import { NARROW_QUERY, scrollToElement, useMediaQuery } from "@/lib/use-media-query";
 
-interface Atlas extends Pick<AtlasState, "hov" | "sysPin"> {
+const rolesOf = (system: string) => systemRoles(RESUME_DATA, system);
+
+interface Atlas {
   /** Under 960px the map sits under the hero and the list does not drive it. */
   narrow: boolean;
-  /** Open role rows, by index. */
+  /** Open role records, by index. */
   open: Readonly<Record<number, boolean>>;
-  /** The role the map is framed on: the most recently opened row still open. */
+  /** The locked pick, and what the map shows now (the hover's preview, else the pick). */
+  pick: Pick | null;
+  shown: Pick | null;
+  /** The picked role, null when the pick is a system or there is none. */
   selected: number | null;
-  /** System being traced, preview first, then the pin. */
+  /** The system the map shows now, previewed or picked, and the roles that used it. */
   sysActive: string | null;
-  /** Roles that used the traced system. */
   sysRoles: ReadonlySet<number> | null;
-  /** What the map draws. */
+  /** What the map draws and frames. */
   focus: MapFocus;
-  /** Role rows lit in the list: hovered and open, or a trace. Independent of the map's tint. */
-  lit: readonly number[];
-  hover: (role: number | null) => void;
+  /** Preview a pick (hover or focus), or end the preview. */
+  hover: (pick: Pick | null) => void;
+  /** A role row's click or toggle: from 960px it opens the record and picks the role, or closes and clears it. */
   toggle: (role: number) => void;
-  /** Opens a role and scrolls the list to it (a site card's "Role"). */
+  /** Opens a role, picks it and scrolls the list to it (a site card's "Role"). */
   openRoleAndScroll: (role: number) => void;
-  /** Opens a role without scrolling, so the map shows that brand (a site card's "All N sites"). */
+  /** Opens and picks a role without scrolling (a site card's "All N sites"). */
   openRoleInPlace: (role: number) => void;
-  /** Puts every brand back on the map; open rows stay open ("Show every site"). */
-  showAll: () => void;
-  sysPreview: (name: string | null) => void;
-  sysToggle: (name: string) => void;
-  sysClear: () => void;
-  /** The last site asked for from outside the map (a caption tier chip), which the map flies to and opens. */
-  siteAsk: SiteAsk | null;
-  /**
-   * Asks the map for a site's card; `from` takes focus back when the card
-   * closes, and `focusCard` says whether focus goes into the card on open.
-   */
-  askSite: (id: number, from: HTMLElement | null, focusCard: boolean) => void;
-}
-
-/** A site asked for from outside the map. Numbered, so asking for the same site again asks again. */
-export interface SiteAsk {
-  id: number;
-  n: number;
-  from: HTMLElement | null;
-  /** Focus goes into the card when it opens; a tier chip keeps it, so the reader can press again. */
-  focusCard: boolean;
+  /** A CMMS name or a STACK row: pick it, or clear it when it is already the pick. */
+  pickSys: (name: string) => void;
+  /** Esc and "Show every site": no pick, every site. */
+  clear: () => void;
 }
 
 const AtlasContext = createContext<Atlas | null>(null);
@@ -55,45 +42,52 @@ const AtlasContext = createContext<Atlas | null>(null);
 export function AtlasProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(atlasReducer, initialAtlasState);
   const narrow = useMediaQuery(NARROW_QUERY);
-  const [siteAsk, setSiteAsk] = useState<SiteAsk | null>(null);
-  const askSite = useCallback((id: number, from: HTMLElement | null, focusCard: boolean) => setSiteAsk((a) => ({ id, n: (a?.n ?? 0) + 1, from, focusCard })), []);
 
   const actions = useMemo(
     () => ({
-      hover: (role: number | null) => dispatch({ type: "hover", role }),
-      toggle: (role: number) => dispatch({ type: "toggle", role }),
-      openRoleAndScroll: (role: number) => {
-        dispatch({ type: "open", role });
-        const el = document.getElementById(`role-row-${role}`);
-        if (el) scrollToElement(el);
-      },
-      openRoleInPlace: (role: number) => dispatch({ type: "open", role }),
-      showAll: () => dispatch({ type: "showAll" }),
-      sysPreview: (name: string | null) => dispatch({ type: "sysPreview", name }),
-      sysToggle: (name: string) => dispatch({ type: "sysToggle", name }),
-      sysClear: () => dispatch({ type: "sysClear" }),
+      hover: (pick: Pick | null) => dispatch({ type: "hover", pick }),
+      clear: () => dispatch({ type: "clear" }),
+      pickSys: (name: string) => dispatch({ type: "pickSys", name }),
     }),
     [],
   );
 
+  // Esc clears the pick, from 960px, unless a site card is open: Esc closes
+  // the card first, and the next one clears.
+  useEffect(() => {
+    if (narrow || state.pick === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape" || e.defaultPrevented || document.querySelector(".maplibregl-popup")) return;
+      dispatch({ type: "clear" });
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [narrow, state.pick]);
+
   const value = useMemo<Atlas>(() => {
-    const sysActive = narrow ? null : (state.sys ?? state.sysPin);
-    const traced = sysActive ? systemRoles(RESUME_DATA, sysActive) : null;
+    const shown = narrow ? null : shownPick(state);
+    const sysActive = shown?.kind === "sys" ? shown.name : null;
+    const traced = sysActive ? pickRoles(shown, rolesOf) : null;
+    const single = !narrow;
     return {
-      hov: state.hov,
-      sysPin: state.sysPin,
       ...actions,
       narrow,
-      open: Object.fromEntries(state.openOrder.map((r) => [r, true])),
-      selected: selectedRole(state),
+      open: Object.fromEntries(state.open.map((r) => [r, true])),
+      pick: narrow ? null : state.pick,
+      shown,
+      selected: narrow ? null : selectedRole(state),
       sysActive,
       sysRoles: traced ? new Set(traced) : null,
-      focus: mapFocus(state, traced, narrow),
-      lit: litRoles(state, traced, narrow),
-      siteAsk,
-      askSite,
+      focus: mapFocus(state, rolesOf, narrow),
+      toggle: (role: number) => dispatch({ type: "toggle", role, single }),
+      openRoleAndScroll: (role: number) => {
+        dispatch({ type: "pickRole", role, single });
+        const el = document.getElementById(`role-row-${role}`);
+        if (el) scrollToElement(el);
+      },
+      openRoleInPlace: (role: number) => dispatch({ type: "pickRole", role, single }),
     };
-  }, [state, actions, narrow, siteAsk, askSite]);
+  }, [state, actions, narrow]);
 
   return <AtlasContext.Provider value={value}>{children}</AtlasContext.Provider>;
 }
@@ -104,22 +98,25 @@ export function useAtlas(): Atlas {
   return atlas;
 }
 
-/** Shared handlers for anything that traces a system: role chips and STACK rows. */
+/**
+ * Shared handlers for anything that picks a system: CMMS names and STACK rows.
+ * Hover and focus preview it; a click picks it, or clears it when it is the pick.
+ */
 export function useSystemTrace(name: string) {
-  const { sysPin, sysPreview, sysToggle } = useAtlas();
+  const { pick, hover, pickSys } = useAtlas();
+  const self: Pick = { kind: "sys", name };
   return {
-    pinned: sysPin === name,
+    pinned: samePick(pick, self),
     handlers: {
       onClick: (e: React.MouseEvent) => {
         e.stopPropagation();
-        sysToggle(name);
+        pickSys(name);
       },
-      // Hover previews for a pointer that hovers; a tap's mouseenter would
-      // leave a preview that nothing clears.
-      onPointerEnter: (e: React.PointerEvent) => e.pointerType !== "touch" && sysPreview(name),
-      onPointerLeave: (e: React.PointerEvent) => e.pointerType !== "touch" && sysPreview(null),
-      onFocus: () => sysPreview(name),
-      onBlur: () => sysPreview(null),
+      // A pointer that hovers previews; a tap's mouseenter would leave a preview nothing clears.
+      onPointerEnter: (e: React.PointerEvent) => e.pointerType !== "touch" && hover(self),
+      onPointerLeave: (e: React.PointerEvent) => e.pointerType !== "touch" && hover(null),
+      onFocus: () => hover(self),
+      onBlur: () => hover(null),
     },
   };
 }

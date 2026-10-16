@@ -53,7 +53,7 @@ test("land cover and parks flatten into the land; built-up areas take a trace of
   assert.deepEqual(paintOf("building", "fill"), { "fill-color": mixHex("#ffffff", "#37352f", 0.06) });
 });
 
-test("borders are grey, never CARTO's pink, which read like a pre-opening dashed ring", () => {
+test("borders are grey, never CARTO's pink, which would read as a red mark", () => {
   assert.deepEqual(paintOf("boundary_country_inner", "line"), { "line-color": "#c9c8c3" });
   assert.deepEqual(paintOf("boundary_country_outline", "line"), { "line-color": "#c9c8c3" });
   assert.deepEqual(paintOf("boundary_state", "line"), { "line-color": "#d3d1cb" });

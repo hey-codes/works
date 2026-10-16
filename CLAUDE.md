@@ -2,7 +2,9 @@
 
 One-page CV site for Cody Mitchell (Atlas v26). Next.js App Router, TypeScript,
 static export, Vercel. It is a document, not an app: readable in two minutes,
-prints cleanly. Replaces `hey-codes/cv`.
+prints cleanly. Live at https://codymitch.works since 2026-10-15 (Vercel
+project `works`, repo `hey-codes/works`); a push to `main` deploys it, so push
+only on Cody's go (`docs/launch-checklist.md` has the steps and the open items).
 
 ## House rules
 
@@ -30,12 +32,12 @@ prints cleanly. Replaces `hey-codes/cv`.
   as Cody gave them (2026-10-15); no addresses, and the `projects` block stays by
   business type only.
 - **Blue is interaction, red is structure. Never crossed.** Focus rings are blue.
-  Red marks where something begins; on the map that includes the sites Cody
-  opened or worked on opening (red diamond, ring and dashed ring, the card's flag
-  and NEW LOCATION chip, and the caption's opening tier chips), and nothing else
-  there is red (Cody, 2026-10-14 and 2026-10-15); an open role's rail, the
-  pen lines under the hero name and an open role's name, and the AWARD chips
-  are red (Cody, 2026-10-15).
+  Red marks where something begins; on the map that includes Cody's projects
+  (a new site opening or a site in construction: one red diamond on a site and
+  as a circle's notch, the site card's PROJECT flag, and the legend's
+  diamonds), and nothing else there is red (Cody, 2026-10-14 and 2026-10-15);
+  an open role's rail, the pen lines under the hero name and an open role's
+  name, and the AWARD chips are red (Cody, 2026-10-15).
 - **Three families, three jobs:** Fraunces display, Geist prose, JetBrains Mono
   metadata and body default.
 - **No public email address anywhere** on the site or in this repo (Cody, 2026-10-13).

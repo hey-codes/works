@@ -62,7 +62,7 @@ type Paint = [layer: string, property: string, value: string];
  * and Dark Matter share their layer ids, so one plan serves either. The land
  * is `land` and the sea `soft`, edged by a 1px coastline in `edge`; parks and
  * land cover flatten into the land and built-up areas take a trace of ink;
- * borders are grey (CARTO's pink dashes read like the pre-opening ring); roads
+ * borders are grey (CARTO's pink dashes would read as a red mark); roads
  * are outlined in the hairline greys and filled with the land; CARTO's names
  * are muted a step further than the map's own market names, so Cody's places
  * outrank the basemap's. Red and blue stay out of the ground. Layers it does

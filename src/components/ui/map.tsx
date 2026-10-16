@@ -929,6 +929,8 @@ function MapControls({
 
   return (
     <div
+      // A map name under the controls is not drawn (see edge-guards.ts).
+      data-map-guard=""
       className={cn(
         "absolute z-10 flex flex-col gap-1.5",
         positionClasses[position],

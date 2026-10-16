@@ -1,4 +1,3 @@
-import type { MapFocus } from "./atlas-reducer.ts";
 import { fromCityZoom, underCityZoom } from "./map-filters.ts";
 
 /** Map colors, read from the CSS tokens at draw time. */
@@ -189,16 +188,13 @@ const FADE = { duration: 150, delay: 0 };
 const halo = (palette: Palette) => ({ "text-halo-color": palette.bg, "text-halo-width": 1.5 });
 
 /**
- * Market and region circles: ink, sized by how many sites they hold, ringed in
- * blue when they hold a tinted role's sites. Circles and rings step out at
- * city zoom by the camera's zoom (`underCityZoom`); both opacities step, as a
- * tinted ring's width reads the circle's data and MapLibre draws a circle
- * while either opacity is above 0. Counts sit inside, gone where a bigger
- * circle covers theirs; a market's name sits under it, muted. A circle that
- * holds an opening wears its strongest tier's notch, which steps out with it.
+ * Market and region circles: ink, sized by how many sites they hold. They step
+ * out at city zoom by the camera's zoom (`underCityZoom`). Counts sit inside,
+ * gone where a bigger circle covers theirs; a market's name sits under it,
+ * muted. A circle that holds a project wears the diamond notch, which steps
+ * out with it. A pick filters the map rather than tinting it (Cody, 2026-10-15).
  */
-export function marketStyle(focus: Pick<MapFocus, "tint">, palette: Palette, compact: boolean) {
-  const tinted = focus.tint.length ? ["+", ...focus.tint.map((r) => ["get", roleKey(r)])] : null;
+export function marketStyle(palette: Palette, compact: boolean) {
   const steps = MARKET_RADIUS[mode(compact)];
   return {
     circles: {
@@ -207,10 +203,6 @@ export function marketStyle(focus: Pick<MapFocus, "tint">, palette: Palette, com
       // A change of mode swaps the radius at once, with the notches and names, which cannot ease.
       "circle-radius-transition": { duration: 0, delay: 0 },
       "circle-opacity": underCityZoom(0.75),
-      "circle-stroke-color": palette.blue,
-      "circle-stroke-opacity": underCityZoom(1),
-      "circle-stroke-width": tinted ? ["case", [">", tinted, 0], 2, 0] : 0,
-      "circle-stroke-width-transition": FADE,
     } as Record<string, unknown>,
     counts: { "text-color": palette.bg, "text-opacity": countOpacity(compact), "text-opacity-transition": { duration: 0, delay: 0 } } as Record<string, unknown>,
     names: { "text-color": palette.muted, ...halo(palette) } as Record<string, unknown>,
@@ -219,17 +211,16 @@ export function marketStyle(focus: Pick<MapFocus, "tint">, palette: Palette, com
 }
 
 /**
- * Sites: a plain site is a small ink dot, blue for a tinted role. The sites Cody
- * opened or worked on opening are drawn as red icons by their own layers (see
- * MARK_ICON) and stay red whatever is tinted. Dots and marks each have two
+ * Sites: a plain site is a small ink dot. Cody's projects are drawn as the red
+ * diamond by their own layers (see MARK_ICON). Dots and marks each have two
  * layers: the open markets' sites, drawn at any zoom, and the rest, drawn from
  * city zoom (`fromCityZoom`). Names are ink on a halo.
  */
-export function siteStyle(focus: Pick<MapFocus, "tint">, palette: Palette) {
+export function siteStyle(palette: Palette) {
   const dots = (opacity: unknown, ringOpacity: unknown) =>
     ({
       "circle-radius": 4.5,
-      "circle-color": focus.tint.length ? ["case", ["in", ["get", "role"], ["literal", [...focus.tint]]], palette.blue, palette.ink] : palette.ink,
+      "circle-color": palette.ink,
       "circle-opacity": opacity,
       "circle-stroke-color": palette.bg,
       "circle-stroke-width": 1,
@@ -245,17 +236,14 @@ export function siteStyle(focus: Pick<MapFocus, "tint">, palette: Palette) {
   };
 }
 
-/** The opening icons, by tier. Pre-opening and in-progress share the dashed ring. */
-export const MARK_ICONS = { opened: "mark-opened", supported: "mark-supported", dashed: "mark-dashed" } as const;
+/**
+ * The project mark: one red diamond for every project type (Cody,
+ * 2026-10-15); the card and the legend name the type.
+ */
+export const MARK_ICON = "mark-project";
 
-/** Layout `icon-image` for the marks layer: a diamond, a ring or a dashed ring. */
-export const MARK_ICON: unknown = ["match", ["get", "opening"], "opened", MARK_ICONS.opened, "supported", MARK_ICONS.supported, MARK_ICONS.dashed];
-
-/** The notch icons, by the strongest tier a circle holds: the marks' shapes on a backing in the ground. */
-export const NOTCH_ICONS = { opened: "notch-opened", supported: "notch-supported", dashed: "notch-dashed" } as const;
-
-/** Layout `icon-image` for the notches, by `tier`: 3 opened, 2 supported, 1 pre-opening or in progress. */
-export const NOTCH_ICON: unknown = ["match", ["get", "tier"], 3, NOTCH_ICONS.opened, 2, NOTCH_ICONS.supported, NOTCH_ICONS.dashed];
+/** A circle that holds a project wears the same diamond on a backing in the ground. */
+export const NOTCH_ICON = "notch-project";
 
 /** Circles that hold an opening, the only ones with a notch. */
 export const HAS_TIER: unknown = [">", ["get", "tier"], 0];

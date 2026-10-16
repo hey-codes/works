@@ -51,8 +51,7 @@ function RoleRecord({ role, index }: { role: Role; index: number }) {
   const atlas = useAtlas();
   const open = !!atlas.open[index];
   const traced = atlas.sysRoles?.has(index) ?? false;
-  // The states that turn the name blue: hovered, its toggle focused, or the selected role.
-  const active = atlas.sysRoles === null && atlas.lit.includes(index);
+  const self = { kind: "role", role: index } as const;
   const parts = nameParts(role);
   const tail = parts[parts.length - 1];
   return (
@@ -60,9 +59,6 @@ function RoleRecord({ role, index }: { role: Role; index: number }) {
       id={`role-row-${index}`}
       className={styles.role}
       data-open={open}
-      data-ground={open || atlas.hov === index}
-      data-rail={atlas.lit.includes(index)}
-      data-active={active}
       data-dim={atlas.sysRoles !== null && !traced}
       style={{ "--sweep": `${index * 15}ms` } as React.CSSProperties}
     >
@@ -72,7 +68,8 @@ function RoleRecord({ role, index }: { role: Role; index: number }) {
         className={styles.roleHead}
         // A pointer that hovers, not a touch: a tap fires mouseenter and
         // nothing ever leaves, so the row's ground stuck after a tap.
-        onPointerEnter={(e) => e.pointerType !== "touch" && atlas.hover(index)}
+        // It previews the role on the map; the row itself only turns gray (CSS).
+        onPointerEnter={(e) => e.pointerType !== "touch" && atlas.hover(self)}
         onPointerLeave={(e) => e.pointerType !== "touch" && atlas.hover(null)}
         onClick={() => atlas.toggle(index)}
       >
@@ -88,10 +85,9 @@ function RoleRecord({ role, index }: { role: Role; index: number }) {
                   {part.url && k < parts.length - 1 ? <OutLink name={part.text} url={part.url} /> : null}
                 </Fragment>
               ))}
-              {/* Red while the record is open, drawn once as it opens; blue while
-                  a closed row is hovered or its toggle focused, drawn each time.
-                  Open wins over hover. */}
-              {open ? <PenStroke key="open" tone="red" variant={index} /> : active ? <PenStroke key="point" tone="blue" variant={index} /> : null}
+              {/* Red while the record is open, drawn once as it opens. Hover draws
+                  nothing (Cody, 2026-10-15). */}
+              {open ? <PenStroke key="open" tone="red" variant={index} /> : null}
             </span>
             {tail?.url ? <OutLink name={tail.text} url={tail.url} /> : null}
           </span>
@@ -128,7 +124,7 @@ function RoleRecord({ role, index }: { role: Role; index: number }) {
             e.stopPropagation();
             atlas.toggle(index);
           }}
-          onFocus={() => atlas.hover(index)}
+          onFocus={() => atlas.hover(self)}
           onBlur={() => atlas.hover(null)}
           id={`role-toggle-${index}`}
           aria-expanded={open}

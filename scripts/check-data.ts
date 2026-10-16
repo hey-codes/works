@@ -62,23 +62,24 @@ for (const [ch, name, allowed] of banned) {
   if (hits > allowed) errors.push(`${name} found in data (${hits})`);
 }
 
-// Opening marks agree with the role they belong to. An opened or supported
-// site opened during the role; a pre-opening site opened during it or after.
-// Where the copy counts openings ("6 opened"), the marks match that count.
+// Project marks agree with the role they belong to. A new site opening, a
+// relocation or a renovation happened during the role; a site in construction
+// opened during it or after. Where the copy counts openings ("6 opened"), the
+// new site openings match that count.
 const yearOf = (monthYear: string) => (monthYear === "Present" ? new Date().getFullYear() : Number(monthYear.slice(-4)));
 for (const w of RESUME_DATA.work) {
   const rows = LOCATIONS.filter((l) => l.brand === w.company);
   const [start, end] = [yearOf(w.start), yearOf(w.end)];
   for (const l of rows) {
     if (!l.opening || l.openedYear === undefined) continue;
-    if ((l.opening === "opened" || l.opening === "supported") && (l.openedYear < start || l.openedYear > end)) {
+    if (l.opening !== "construction" && (l.openedYear < start || l.openedYear > end)) {
       errors.push(`site ${l.id}: ${l.opening} in ${l.openedYear}, outside ${w.company} ${start}-${end}`);
     }
-    if (l.opening === "pre-opening" && l.openedYear < start) errors.push(`site ${l.id}: pre-opening but opened ${l.openedYear}, before ${w.company} began`);
+    if (l.opening === "construction" && l.openedYear < start) errors.push(`site ${l.id}: in construction but opened ${l.openedYear}, before ${w.company} began`);
   }
   if (w.sitesLabel === "opened") {
-    const opened = rows.filter((l) => l.opening === "opened").length;
-    if (opened !== w.sites) errors.push(`${w.company}: ${opened} sites marked opened, copy says ${w.sites} ${w.sitesLabel}`);
+    const opened = rows.filter((l) => l.opening === "nso").length;
+    if (opened !== w.sites) errors.push(`${w.company}: ${opened} new site openings, copy says ${w.sites} ${w.sitesLabel}`);
   }
 }
 

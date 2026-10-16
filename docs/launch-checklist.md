@@ -22,7 +22,7 @@
 
 ### Site
 
-- [ ] Web Analytics: Cody enables it in Vercel (project `works`, Analytics, Enable), then the `<Analytics />` commit ships; after the deploy, a visit to the live site should show in the Analytics tab within a minute or so
+- [ ] Own visits: `?notrack` opts a browser out of the counts, `?track` back in (`site-analytics.tsx`). Once live, Cody opens codymitch.works/?notrack once in each browser used (Mac and iPhone)
 - [ ] The map's framing keeps clear of Show every site and the zoom buttons but not of the legend (top right) or the Honolulu inset (bottom left), so either can sit over a few dots in some views; names under them are not drawn. Reserving room would shrink every fit (Cody accepted as is, 2026-10-15)
 - [ ] Check the page on a real iPhone: the Honolulu inset is a second live map (a second WebGL context)
 - [ ] MapLibre's dev bundles (about 5MB, `maplibre-gl-*-dev.mjs`) are emitted into the deploy though the site never loads them; trim them if the build allows
@@ -59,6 +59,10 @@
 - [x] Domain: `codymitch.works` moved to project `works`, `www` redirecting (308) to the apex, and Vercel Authentication set back to all except custom domains in the same step (2026-10-15; the site was down about a minute between the old project's deletion and the move)
 - [x] `hey-codes/cv` deleted on GitHub by Cody (2026-10-15), in place of a pointer note and archiving
 - [x] Old Vercel project `cv` deleted by Cody (2026-10-15) rather than paused; no rollback project is kept
+
+## Done: Web Analytics, live 2026-10-15 (`fd00e12`)
+
+- [x] Vercel Web Analytics: Cody enabled it in Vercel; `<Analytics />` in the layout. Checked on the live domain: the script loads and the page view posts (200). The dashboard keeps one month on Hobby; no custom click events
 
 ## Done: first update, live 2026-10-15 evening (`df9dec0`)
 

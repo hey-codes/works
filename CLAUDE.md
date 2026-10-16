@@ -12,6 +12,11 @@ only on Cody's go (`docs/launch-checklist.md` has the steps and the open items).
   commas, parens, semicolons or sentence breaks; ranges read "30 to 55%" in
   prose and "2018-2021" in the year column.
 - **Never delete files.** Move them to `archive/` (local only: git-ignored, never pushed) or append `-ARCHIVE` to the name.
+- **Live-site visits carry `?notrack`.** Open codymitch.works in any browser or
+  page-rendering tool (Playwright, Chrome, the built-in browser, firecrawl) as
+  `https://codymitch.works/?notrack`, so the visit stays out of Cody's Web
+  Analytics. curl and WebFetch run no script and never count; local dev and
+  previews never count.
 - **Kebab-case filenames**, except proper nouns, brands, acronyms and files a
   tool requires by name (`CLAUDE.md`, `README.md`).
 

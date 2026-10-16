@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { Analytics } from "@vercel/analytics/next";
 import { Geist } from "next/font/google";
 import localFont from "next/font/local";
+import { SiteAnalytics } from "@/components/site-analytics";
 import { RESUME_DATA } from "@/data/resume-data";
 import "./globals.css";
 import "./tailwind.css";
@@ -67,8 +67,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         {children}
-        {/* Vercel Web Analytics: page views and referrers in aggregate; no cookies, nothing personal. */}
-        <Analytics />
+        <SiteAnalytics />
       </body>
     </html>
   );

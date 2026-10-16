@@ -20,15 +20,16 @@ test("ten thousand and up rounds to whole thousands", () => {
   assert.equal(compactSqft(9960), "10K");
 });
 
-const words = { opened: "OPENED", supported: "SUPPORTED", "pre-opening": "PRE-OPENING", "in-progress": "IN PROGRESS" };
+const words = { nso: "NSO", construction: "IN CONSTRUCTION", relocation: "RELOCATION", renovation: "RENOVATION" };
 
-test("an opening flag carries the year it opened", () => {
-  assert.equal(openingLabel("opened", 2022, words), "OPENED · 2022");
-  assert.equal(openingLabel("pre-opening", 2025, words), "PRE-OPENING · 2025");
+test("a project flag carries its year", () => {
+  assert.equal(openingLabel("nso", 2022, words), "NSO · 2022");
+  assert.equal(openingLabel("renovation", 2019, words), "RENOVATION · 2019");
 });
 
-test("with no year on record the flag stands alone", () => {
-  assert.equal(openingLabel("supported", null, words), "SUPPORTED");
+test("with no year on record, or in construction (it opened after Cody left), the flag stands alone", () => {
+  assert.equal(openingLabel("nso", null, words), "NSO");
+  assert.equal(openingLabel("construction", 2025, words), "IN CONSTRUCTION");
 });
 
 test("details read SKILL, then TOOLS, then AWARD, each value its own chip", () => {

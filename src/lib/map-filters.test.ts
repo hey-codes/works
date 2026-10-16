@@ -48,12 +48,12 @@ test("the open cities are copied into the filter, not shared with the caller", (
 });
 
 test("the mark filter matches the opening against the tier list, not whether the field is present", () => {
-  assert.deepEqual(HAS_OPENING, ["in", ["get", "opening"], ["literal", ["opened", "supported", "pre-opening", "in-progress"]]]);
+  assert.deepEqual(HAS_OPENING, ["in", ["get", "opening"], ["literal", ["nso", "construction", "relocation", "renovation"]]]);
 });
 
 test("the mark filter spells out every opening tier, and only those", () => {
   // The typecheck holds this record to exactly the members of Opening.
-  const tiers: Record<Opening, true> = { opened: true, supported: true, "pre-opening": true, "in-progress": true };
+  const tiers: Record<Opening, true> = { nso: true, construction: true, relocation: true, renovation: true };
   const listed = (HAS_OPENING as [string, unknown, [string, string[]]])[2][1];
   assert.deepEqual([...listed].sort(), Object.keys(tiers).sort());
 });

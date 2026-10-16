@@ -16,7 +16,6 @@ import {
   NAME_ANCHORS,
   NOTCH_DISC,
   NOTCH_ICON,
-  NOTCH_ICONS,
   NOTCH_OUT,
   NOTCH_SIZE,
   nameOffset,
@@ -139,13 +138,9 @@ test("an open market's dots look like the rest once drawn", () => {
   assert.deepEqual(same(openDots), same(dots));
 });
 
-test("each opening tier gets its own shape: diamond, ring, dashed ring", () => {
-  assert.deepEqual(MARK_ICON, ["match", ["get", "opening"], "opened", "mark-opened", "supported", "mark-supported", "mark-dashed"]);
-});
-
-test("a notch shows the strongest tier inside: diamond, ring, dashed ring", () => {
-  assert.deepEqual(NOTCH_ICONS, { opened: "notch-opened", supported: "notch-supported", dashed: "notch-dashed" });
-  assert.deepEqual(NOTCH_ICON, ["match", ["get", "tier"], 3, "notch-opened", 2, "notch-supported", "notch-dashed"]);
+test("every project type wears the one red diamond, on a site and as a circle's notch", () => {
+  assert.equal(MARK_ICON, "mark-project");
+  assert.equal(NOTCH_ICON, "notch-project");
   assert.deepEqual(HAS_TIER, [">", ["get", "tier"], 0]);
 });
 

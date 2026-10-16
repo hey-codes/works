@@ -17,18 +17,14 @@ test("a TYPE that only repeats the name is dropped", () => {
   assert.equal(showsType(site({ name: "Woodworking", type: "Woodworking" })), false);
 });
 
-test("NEW LOCATION marks the openings Cody led or is leading, never a supported one", () => {
-  assert.deepEqual(keys(site({ opening: "opened" })), ["newLocation"]);
-  assert.deepEqual(keys(site({ opening: "pre-opening" })), ["newLocation"]);
-  assert.deepEqual(keys(site({ opening: "in-progress" })), ["newLocation"]);
-  assert.deepEqual(keys(site({ opening: "supported" })), []);
+test("a project is the card's flag, never a chip", () => {
+  for (const opening of ["nso", "construction", "relocation", "renovation"] as const) assert.deepEqual(keys(site({ opening })), []);
 });
 
 test("CLOSED is last and muted, with its year where the records hold one", () => {
-  const chips = cardChips(site({ type: "Flagship", opening: "opened", closed: true, closedYear: 2026 }));
+  const chips = cardChips(site({ type: "Flagship", opening: "nso", closed: true, closedYear: 2026 }));
   assert.deepEqual(chips, [
     { key: "flagship", tone: "ink", year: null },
-    { key: "newLocation", tone: "red", year: null },
     { key: "closed", tone: "muted", year: 2026 },
   ]);
   assert.deepEqual(cardChips(site({ closed: true })), [{ key: "closed", tone: "muted", year: null }]);

@@ -38,22 +38,16 @@ function Fact({ label, children, wide }: { label: string; children: React.ReactN
 }
 
 /**
- * The flag matches the map's mark: red, solid for opened, outlined for
- * supported; pre-opening and in-progress share the dashed outline. It never
- * breaks inside ("SUPPORTED ·" over "2022"): where it does not fit beside the
- * brand it takes its own line, below the close mark, and may use the room the
- * mark keeps clear on the line above.
+ * The project flag, in red as the map's mark is, one look for every type
+ * (Cody, 2026-10-15): the type names it. It never breaks inside ("NSO ·" over
+ * "2022"): where it does not fit beside the brand it takes its own line, below
+ * the close mark, and may use the room the mark keeps clear on the line above.
  */
-const FLAG: Record<Opening, string> = {
-  opened: "border-[var(--red)] bg-[var(--red)] text-[var(--bg)]",
-  supported: "border-[var(--red)] text-[var(--red)]",
-  "pre-opening": "border-dashed border-[var(--red)] text-[var(--red)]",
-  "in-progress": "border-dashed border-[var(--red)] text-[var(--red)]",
-};
+const FLAG = "border-[var(--red)] text-[var(--red)]";
 
 export function OpeningFlag({ opening, year, className = "" }: { opening: Opening; year: number | null; className?: string }) {
   return (
-    <span className={`inline-block rounded-[4px] border px-1.5 py-1 text-[11px] leading-none font-medium tracking-[var(--track-label)] whitespace-nowrap ${FLAG[opening]}${className ? ` ${className}` : ""}`}>
+    <span className={`inline-block rounded-[4px] border px-1.5 py-1 text-[11px] leading-none font-medium tracking-[var(--track-label)] whitespace-nowrap ${FLAG}${className ? ` ${className}` : ""}`}>
       {openingLabel(opening, year, COPY.flags)}
     </span>
   );

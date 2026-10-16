@@ -4,7 +4,7 @@ Durable product context for codymitch.works. Sources: hey-codes/cv `README.md`, 
 
 ## What it is
 
-A one-page CV site for Cody Mitchell, a facilities leader: 13 years, 9 brands, 400+ locations. Live at https://codymitch.works. Next.js, TypeScript, plain CSS variables, static export on Vercel (repo `hey-codes/works`, which replaces `hey-codes/cv`). All content lives in `src/data/resume-data.ts`; updating the site is a text edit and a deploy.
+A one-page CV site for Cody Mitchell, a facilities leader: 13 years, 9 brands, 400+ locations. Live at https://codymitch.works. Next.js, TypeScript, plain CSS variables, static export on Vercel (repo `hey-codes/works`, live since 2026-10-15; it replaced `hey-codes/cv`, since deleted). All content lives in `src/data/resume-data.ts`; updating the site is a text edit and a deploy.
 
 It is a document, not an app. No dashboard, no shell, no navigation chrome beyond a scroll rail. Readable in about two minutes. Prints cleanly.
 
@@ -36,13 +36,13 @@ Voice is first-person, plain, a little warm ("the receipts", "sales floor to FM"
   - Each role's collapsed row carries a one-line `context` note; its highlight opens with the record.
   - Experience lists 9 roles. Independent counts "4 clients", its client markers on the map.
 - **Four stat-strip figures:** 13 Years in FM, 400+ Locations, 2.8M+ Sq ft managed, 9 Brands. No dollar figures anywhere on the site. (Cody, 2026-10-14; replaces 2.9M+ and the managed-spend figure.)
-- **Filtering dims, never hides.** Tags are clickable to trace a system across roles; the page keeps its shape. The map is the one exception: opening a job shows that brand alone (Cody, 2026-10-14).
+- **Filtering dims, never hides.** Tags are clickable to trace a system across roles; the page keeps its shape. The map is the one exception: a pick (a role, a CMMS name or a STACK row, one at a time) shows its sites alone, a hover previews it in place and a click frames it (Cody, 2026-10-14 and 2026-10-15).
 - **Print stays conservative:** no marginalia, no motion, everything expanded.
 
 ## Identity lock (Cody, 2026-09-28: "Never change these")
 
 1. ~~Red-pen marginalia is the signature.~~ **Retired by Cody, 2026-10-13.** No marginalia anywhere. The `note` field in resume data is unused.
-2. **Blue carries interaction, red carries structure. Never crossed.** Clickable = `--blue` (#0070E0 light, #4DA3FF dark). Marks where something begins = `--red`. On the map, that includes the sites Cody opened or worked on opening (Cody, 2026-10-14). An open role's rail is red too (Cody, 2026-10-15). No steel blue.
+2. **Blue carries interaction, red carries structure. Never crossed.** Clickable = `--blue` (#0070E0 light, #4DA3FF dark). Marks where something begins = `--red`. On the map, that includes Cody's projects, new site openings and sites in construction, each one red diamond (Cody, 2026-10-14 and 2026-10-15). An open role's rail is red too (Cody, 2026-10-15). No steel blue.
 3. **Three families, three jobs.** Fraunces display, Geist prose, JetBrains Mono metadata (nav, section labels, stat labels, job titles, meta lines, tags).
 - LinkedIn chip and GitHub icon style from the original header.
 - Capabilities as chips; tools are not among them, they are 05 Stack.
@@ -72,4 +72,4 @@ Voice is first-person, plain, a little warm ("the receipts", "sales floor to FM"
 
 ## Current direction
 
-Atlas v26, built in this repo: an explorable map of every site (mapcn on CARTO tiles) in a sticky right column; hovering a role tints its sites and opening it frames them. Under 960px the map sits under the hero, still explorable, and the role list does not drive it. Dark mode follows the system with a manual toggle. Map locations are real records since 2026-10-13 (rulings in `docs/locations-spec.md`).
+Atlas v26, built in this repo: an explorable map of every site (mapcn on CARTO tiles) in a sticky right column; hovering a role, a CMMS name or a STACK row shows its sites alone and clicking it frames them, with a legend for the red diamonds and Honolulu inset in the corner. Under 960px the map sits under the hero, still explorable, and the role list does not drive it. Dark mode follows the system with a manual toggle. Map locations are real records since 2026-10-13 (rulings in `docs/locations-spec.md`).

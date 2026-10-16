@@ -5,22 +5,20 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Map, MapControls, MapPopup, useMap } from "@/components/ui/map";
 import { RESUME_DATA } from "@/data/resume-data";
-import { showEverySiteFlies } from "@/lib/flight";
 import { cardPadding, framePadding } from "@/lib/framing";
-import { FIT_MAX_ZOOM, MAP_MAX_ZOOM, MAP_MIN_ZOOM, ROLE_FIT_MAX_ZOOM } from "@/lib/map-config";
-import { openingTiers, type OpeningTier, portfolioTiers } from "@/lib/openings";
-import { boundsOfCoords, farFor, farSites, MAINLAND_BOUNDS, marketsFor, pointsFor, roleBounds, SITE_POINTS, type SitePoints } from "@/lib/site-points";
+import { MAP_MAX_ZOOM, MAP_MIN_ZOOM, ROLE_FIT_MAX_ZOOM } from "@/lib/map-config";
+import { projectTypes } from "@/lib/openings";
+import { MAINLAND_BOUNDS, marketsFor, pointsFor, roleBounds, SITE_POINTS } from "@/lib/site-points";
 import { spotLabelsFor, spotPointsOf, spotSites } from "@/lib/spots";
-import { motionMs, prefersCoarsePointer, prefersReducedMotion, useMediaQuery } from "@/lib/use-media-query";
+import { motionMs, prefersCoarsePointer, useMediaQuery } from "@/lib/use-media-query";
 import { useAtlas } from "./atlas-state";
+import { HonoluluInset } from "./honolulu-inset";
 import { cameraFor, flyToBounds } from "./map-flight";
 import { SiteCard } from "./site-card";
 import { SpotCard } from "./spot-card";
 import { type ClickedSpot, type HoveredSpot, SiteClusters } from "./site-clusters";
 
 const ROLES = RESUME_DATA.work;
-/** Each site's role, by site id, so a dot under the mouse can trace its role. (`Map` here is mapcn's map.) */
-const ROLE_OF = new globalThis.Map(SITE_POINTS.features.map((f) => [f.properties.id, f.properties.role]));
 
 /** CARTO's street styles, the same pair mapcn defaults to. */
 const GROUND = {
@@ -55,47 +53,32 @@ function BeforeAttribution({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * The camera follows the open role and nothing else. It flies when that role
- * changes: never on hover, never for a traced system, and never because the
- * theme reloaded. It also owns "Show every site": from a brand's view or with
- * a market open it leaves the camera where it is, and only a press with every
- * brand shown and nothing open flies out to the opening view.
+ * The camera frames the pick: a role's sites, or every role's that a picked
+ * system was used at; with no pick, the opening view. A hover never moves it.
+ * It also owns "Show every site", which clears the pick and flies out to the
+ * opening view, closing any open market (Cody, 2026-10-15).
  */
-function Camera({ frame, brandAlone, marketOpen, onReset }: { frame: number | null; brandAlone: boolean; marketOpen: boolean; onReset: () => void }) {
+function Camera({ frame, onReset }: { frame: readonly number[] | null; onReset: () => void }) {
   const { map, isLoaded } = useMap();
-  const { showAll } = useAtlas();
+  const { clear } = useAtlas();
+  const key = frame === null ? null : frame.join(",");
   // undefined until the map first loads and takes its opening view.
-  const framed = useRef<number | null | undefined>(undefined);
-  // Set when "Show every site" must not move the camera, so the frame change it causes is swallowed.
-  const hold = useRef(false);
+  const framed = useRef<string | null | undefined>(undefined);
 
   useEffect(() => {
-    if (!map || !isLoaded || framed.current === frame) return;
-    // "Show every site" from a brand's view leaves the camera where it is.
-    if (hold.current) {
-      hold.current = false;
-      framed.current = frame;
-      return;
-    }
+    if (!map || !isLoaded || framed.current === key) return;
     const bounds = frame === null ? MAINLAND_BOUNDS : roleBounds(frame);
-    // A role with no sites leaves the view where it is.
+    // A pick with no sites leaves the view where it is.
     if (!bounds) return;
     // The first view is a jump, not a flight: the map opened on its own fit
     // of these bounds, which this matches but for the zoom floor's rule (a
     // box too tall for the phone frame keeps clear of the top controls).
     const first = framed.current === undefined;
-    framed.current = frame;
+    framed.current = key;
     if (first) map.jumpTo(cameraFor(map, bounds, frame === null ? MAP_MAX_ZOOM : ROLE_FIT_MAX_ZOOM));
     else flyToBounds(map, bounds, ROLE_FIT_MAX_ZOOM);
-  }, [map, isLoaded, frame]);
-
-  // The hold covers the one frame change "Show every site" causes. This runs
-  // after the effect above on every change of frame, so a hold that effect
-  // returned before consuming (a role with no sites, or the map not loaded)
-  // cannot stay armed and swallow a later flight.
-  useEffect(() => {
-    hold.current = false;
-  }, [frame]);
+    // `frame` is read through `key`, which changes exactly when it does.
+  }, [map, isLoaded, key]);
 
   useEffect(() => {
     if (!map || !isLoaded) return;
@@ -105,24 +88,19 @@ function Camera({ frame, brandAlone, marketOpen, onReset }: { frame: number | nu
     map.getContainer().querySelector(".maplibregl-ctrl-attrib")?.classList.remove("maplibregl-compact-show");
   }, [map, isLoaded]);
 
-  // Every brand back, open rows kept, any open market closed. The camera stays
-  // where the reader is looking; only with every brand already shown and no
-  // market open does it fly out to the opening view.
+  // No pick and every site. With a pick, clearing it changes the frame, which
+  // flies out; with none, the reader may have moved, so it flies out here.
   const showEverySite = () => {
-    const flies = showEverySiteFlies(brandAlone, marketOpen);
-    // Framed on a role, the frame changes on showAll. A press that stays holds
-    // the camera through that change; one that flies (a trace, with every brand
-    // shown and the role framed) lets that change make the one flight out.
-    if (!flies && frame !== null) hold.current = true;
-    showAll();
     onReset();
-    if (map && flies && framed.current === null) flyToBounds(map, MAINLAND_BOUNDS, ROLE_FIT_MAX_ZOOM);
+    clear();
+    if (map && frame === null) flyToBounds(map, MAINLAND_BOUNDS, ROLE_FIT_MAX_ZOOM);
   };
 
   return (
     <button
       type="button"
       onClick={showEverySite}
+      data-map-guard=""
       className="border-border bg-background hover:bg-accent pointer-coarse:h-11 pointer-coarse:px-3 absolute top-2 left-2 z-10 h-8 rounded-[4px] border px-2 font-mono text-xs"
     >
       {RESUME_DATA.map.reset}
@@ -154,54 +132,29 @@ function GroundCheck({ onFail }: { onFail: () => void }) {
   return null;
 }
 
-/**
- * What the caption shows of the map: the brand drawn (`role`, null for every
- * brand), whether its far sites (Honolulu's) are off the frame and their
- * place and count, and its opening tiers. Worked out here, in the map's
- * chunk, so the page's first script never carries the location records.
- */
-export interface MapReport {
-  role: number | null;
-  offFrame: boolean;
-  far: { city: string; count: number } | null;
-  tiers: OpeningTier[];
-}
+const LEGEND = projectTypes(SITE_POINTS);
 
 /**
- * Reports to the caption, after every move and every change of brand, and
- * hands it the flight to the far sites. The flight starts by giving focus to
- * the map, since the caption's link goes once the sites are in view. When the
- * map goes (its error boundary caught, or it unmounted), the report and the
- * flight go with it, so the caption drops the tier chips and the far link.
+ * The key to the red diamond (Cody, 2026-10-15): the project types the records
+ * hold, each beside the mark, under the zoom buttons. Static: it filters
+ * nothing, and the pointer passes through it to the map.
  */
-function MapReporter({ data, role, onReport, goRef }: { data: SitePoints; role: number | null; onReport: (report: MapReport | null) => void; goRef: React.RefObject<(() => void) | null> }) {
-  const { map } = useMap();
-  useEffect(() => {
-    if (!map) return;
-    const far = farFor(role);
-    const tiers = role === null ? portfolioTiers(RESUME_DATA.work.length) : openingTiers(role);
-    const coords = farSites(data).map((f) => f.geometry.coordinates as [number, number]);
-    const check = () => {
-      const view = map.getBounds();
-      onReport({ role, offFrame: coords.length > 0 && !coords.some((c) => view.contains(c)), far, tiers });
-    };
-    goRef.current = coords.length
-      ? () => {
-          const box = boundsOfCoords(coords);
-          if (!box) return;
-          map.getCanvas().focus({ preventScroll: true });
-          flyToBounds(map, box, FIT_MAX_ZOOM);
-        }
-      : null;
-    check();
-    map.on("moveend", check);
-    return () => {
-      map.off("moveend", check);
-      goRef.current = null;
-      onReport(null);
-    };
-  }, [map, data, role, onReport, goRef]);
-  return null;
+function Legend() {
+  return (
+    <ul
+      data-map-guard=""
+      className="border-border bg-background text-muted-foreground pointer-events-none absolute top-[82px] right-2 z-10 m-0 flex list-none flex-col gap-1 rounded-[4px] border px-2 py-1.5 font-mono text-[11px] leading-none font-medium tracking-[var(--track-label)] pointer-coarse:top-[106px]"
+    >
+      {LEGEND.map((type) => (
+        <li key={type} className="flex items-center gap-1.5">
+          <svg aria-hidden="true" width="9" height="9" viewBox="0 0 9 9" className="shrink-0">
+            <path d="M4.5 0.5 8.5 4.5 4.5 8.5 0.5 4.5Z" fill="var(--red)" />
+          </svg>
+          {RESUME_DATA.map.legend[type]}
+        </li>
+      ))}
+    </ul>
+  );
 }
 
 /** The name of the dot or circle under the mouse, with a circle's openings, in the muted metadata style. No shadow, no fade; ignores the pointer. */
@@ -310,13 +263,9 @@ interface OpenSpot extends ClickedSpot {
   focusCard: boolean;
 }
 
-/**
- * Every site, explorable. Loaded after first paint by map-aside, which shows
- * the caption: `onReport` tells it what the map shows (see MapReport), and
- * `goAway` holds the flight to the far sites.
- */
-export default function SiteMap({ onReport, goAway }: { onReport: (report: MapReport | null) => void; goAway: React.RefObject<(() => void) | null> }) {
-  const { focus, narrow, sysActive, openRoleAndScroll, openRoleInPlace, siteAsk, hover } = useAtlas();
+/** Every site, explorable. Loaded after first paint by map-aside, which shows the caption. */
+export default function SiteMap() {
+  const { focus, narrow, openRoleAndScroll, openRoleInPlace } = useAtlas();
   const [spot, setSpot] = useState<OpenSpot | null>(null);
   const clicks = useRef(0);
   const mapRef = useRef<MapLibreGL.Map>(null);
@@ -334,24 +283,10 @@ export default function SiteMap({ onReport, goAway }: { onReport: (report: MapRe
   const [blank, setBlank] = useState(false);
   const goBlank = useCallback(() => setBlank(true), []);
   const [hovered, setHovered] = useState<HoveredSpot | null>(null);
-  // A dot under the mouse traces its role, as hovering the role's row does:
-  // the row lights and the map rings that role's markets. Only a role this
-  // set is cleared here, so a flight that starts under a hovered row (which
-  // clears the map's hover) leaves the row's own hover alone. From 960px,
-  // where the list drives the map.
-  const dotRole = useRef<number | null>(null);
-  const onHover = useCallback(
-    (h: HoveredSpot | null) => {
-      setHovered(h);
-      const lead = h?.ids[0];
-      const role = lead === undefined || narrowNow.current ? null : (ROLE_OF.get(lead) ?? null);
-      if (role === dotRole.current) return;
-      if (role !== null) hover(role);
-      else hover(null);
-      dotRole.current = role;
-    },
-    [hover],
-  );
+  // The dot or circle under the mouse is only named: it no longer traces its
+  // role, since a hover now filters the map and would swap the dots under the
+  // pointer (Cody, 2026-10-15).
+  const onHover = setHovered;
   // Mouse only: touch has no hover, and a tap opens the card anyway.
   const canHover = useMediaQuery("(hover: hover) and (pointer: fine)");
   // The map's layout switches at 960px (`narrow`), the card's at 1280px: from
@@ -360,10 +295,10 @@ export default function SiteMap({ onReport, goAway }: { onReport: (report: MapRe
   const compactCard = useMediaQuery("(max-width: 1279.98px)");
   const showHover = canHover && hovered && !(spot && spot.sites.some((s) => hovered.ids.includes(s.id)));
 
-  // An open role is shown alone: its sites, its clusters, its markets.
-  const data = pointsFor(focus.selected);
-  const markets = marketsFor(focus.selected);
-  const spotLabels = spotLabelsFor(focus.selected);
+  // What is picked or previewed is shown alone: its sites, its clusters, its markets.
+  const data = pointsFor(focus.shown);
+  const markets = marketsFor(focus.shown);
+  const spotLabels = spotLabelsFor(focus.shown);
   // The markets whose own sites are drawn, after a market click: every market
   // circle under the pointer. A brand change clears them.
   const [openMarkets, setOpenMarkets] = useState<readonly string[] | null>(null);
@@ -408,51 +343,6 @@ export default function SiteMap({ onReport, goAway }: { onReport: (report: MapRe
     lastSpot.current = spot;
   }, [spot]);
 
-  // A site asked for from outside the map (a caption tier chip): its brand is
-  // shown (opening its role, if another is), the map flies to it and its card
-  // opens, with focus in it only if asked (a chip keeps focus, so the reader
-  // can press again). A request waits a render for its brand's sites to be drawn.
-  const answered = useRef(0);
-  const roleAsked = useRef(0);
-  // The card waiting for its flight to land. A flight cut short still ends in
-  // a moveend (flyTo stops the one before it), so a waiting card is let go
-  // before the next flight, or it would open at the half-flown camera.
-  const landing = useRef<(() => void) | null>(null);
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!siteAsk || answered.current === siteAsk.n || !map) return;
-    const site = SITE_POINTS.features.find((f) => f.properties.id === siteAsk.id);
-    const drawn = data.features.some((f) => f.properties.id === siteAsk.id);
-    // Not drawn: open its role once (a trace keeps every brand on, which draws it anyway).
-    if (site && !drawn && roleAsked.current !== siteAsk.n) {
-      roleAsked.current = siteAsk.n;
-      openRoleInPlace(site.properties.role);
-      return;
-    }
-    answered.current = siteAsk.n;
-    if (!site || !drawn) return;
-    const [lng = 0, lat = 0] = site.geometry.coordinates;
-    const open = () => openSpot({ lng, lat, sites: spotSites(data, [[lng, lat]]) }, { first: siteAsk.id, returnTo: siteAsk.from, focusCard: siteAsk.focusCard });
-    const letGo = () => {
-      if (landing.current) map.off("moveend", landing.current);
-      landing.current = null;
-    };
-    letGo();
-    flyToBounds(map, [[lng, lat], [lng, lat]], FIT_MAX_ZOOM);
-    // A jump (reduced motion) has landed already; a flight opens the card where it lands.
-    if (prefersReducedMotion()) {
-      open();
-      return;
-    }
-    const land = () => {
-      landing.current = null;
-      open();
-    };
-    landing.current = land;
-    map.once("moveend", land);
-    return letGo;
-  }, [siteAsk, data, openRoleInPlace, openSpot]);
-
   return (
     <Map
       ref={mapRef}
@@ -489,11 +379,11 @@ export default function SiteMap({ onReport, goAway }: { onReport: (report: MapRe
         onSpotClick={openSpot}
         onHover={onHover}
       />
-      {/* The brand drawn: none when every brand is (a role with no sites of its own draws them all). */}
-      <MapReporter data={data} role={data === SITE_POINTS ? null : focus.selected} onReport={onReport} goRef={goAway} />
       {showHover ? <HoverName spot={hovered} /> : null}
+      <Legend />
+      <HonoluluInset points={data} ground={GROUND} blank={blank} />
       <BeforeAttribution>
-        <Camera frame={focus.frame} brandAlone={focus.selected !== null} marketOpen={openMarkets !== null} onReset={clearMarkets} />
+        <Camera frame={focus.frame} onReset={clearMarkets} />
         <MapControls position="top-right" zoomInLabel={RESUME_DATA.map.controls.zoomIn} zoomOutLabel={RESUME_DATA.map.controls.zoomOut} />
       </BeforeAttribution>
       {spot ? (
@@ -530,10 +420,9 @@ export default function SiteMap({ onReport, goAway }: { onReport: (report: MapRe
                   site={site}
                   compact={compactCard}
                   back={back}
-                  // Hidden where showing the brand would change nothing visible: under 960px
-                  // (the list does not drive the map), while a system is traced (every brand
-                  // stays on), or when the map already shows this brand.
-                  canShowBrand={!narrow && !sysActive && focus.selected !== site.role}
+                  // Hidden where picking the brand would change nothing visible: under 960px
+                  // (the list does not drive the map), or when the map shows this brand alone.
+                  canShowBrand={!narrow && !(focus.shown?.length === 1 && focus.shown[0] === site.role)}
                   onShowBrand={() => {
                     openRoleInPlace(site.role);
                     setSpot(null);

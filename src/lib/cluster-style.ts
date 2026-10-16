@@ -245,17 +245,14 @@ export function siteStyle(focus: Pick<MapFocus, "tint">, palette: Palette) {
   };
 }
 
-/** The opening icons, by tier. Pre-opening and in-progress share the dashed ring. */
-export const MARK_ICONS = { opened: "mark-opened", supported: "mark-supported", dashed: "mark-dashed" } as const;
+/**
+ * The project mark: one red diamond for every project type (Cody,
+ * 2026-10-15); the card and the legend name the type.
+ */
+export const MARK_ICON = "mark-project";
 
-/** Layout `icon-image` for the marks layer: a diamond, a ring or a dashed ring. */
-export const MARK_ICON: unknown = ["match", ["get", "opening"], "opened", MARK_ICONS.opened, "supported", MARK_ICONS.supported, MARK_ICONS.dashed];
-
-/** The notch icons, by the strongest tier a circle holds: the marks' shapes on a backing in the ground. */
-export const NOTCH_ICONS = { opened: "notch-opened", supported: "notch-supported", dashed: "notch-dashed" } as const;
-
-/** Layout `icon-image` for the notches, by `tier`: 3 opened, 2 supported, 1 pre-opening or in progress. */
-export const NOTCH_ICON: unknown = ["match", ["get", "tier"], 3, NOTCH_ICONS.opened, 2, NOTCH_ICONS.supported, NOTCH_ICONS.dashed];
+/** A circle that holds a project wears the same diamond on a backing in the ground. */
+export const NOTCH_ICON = "notch-project";
 
 /** Circles that hold an opening, the only ones with a notch. */
 export const HAS_TIER: unknown = [">", ["get", "tier"], 0];

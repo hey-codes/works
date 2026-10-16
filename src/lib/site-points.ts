@@ -66,11 +66,11 @@ export function buildSitePoints(sites: readonly Site[], companies: readonly stri
   return { type: "FeatureCollection", features };
 }
 
-const OPENING_RANK: Record<Opening, number> = { opened: 3, supported: 2, "pre-opening": 1, "in-progress": 1 };
+const OPENING_RANK: Record<Opening, number> = { nso: 1, construction: 1, relocation: 1, renovation: 1 };
 
 /**
- * A site's opening tier as a rank, so a market can carry its strongest:
- * opened 3, supported 2, pre-opening and in progress 1, none 0.
+ * A site's project as a rank, so a market knows whether it holds one: every
+ * project type 1, none 0. One mark serves them all (Cody, 2026-10-15).
  */
 export const openingRank = (opening: Opening | null): number => (opening ? OPENING_RANK[opening] : 0);
 
@@ -119,7 +119,7 @@ export const farSites = (points: SitePoints): SitePoints["features"] =>
  * the far sites' place and count, from that brand's own sites only. None for a
  * role whose own sites are all in view, or that has none.
  */
-export function farFor(role: number | null): { city: string; count: number } | null {
+export function farFor(role: Shown): { city: string; count: number } | null {
   const points = pointsFor(role);
   if (role !== null && points === SITE_POINTS) return null;
   const far = farSites(points);
@@ -138,23 +138,30 @@ export const MAINLAND_BOUNDS: Bounds = boundsOf(SITE_POINTS, (_p, lng) => lng > 
  * a fit that reached Hawaii would push the rest off a narrow frame. null when
  * the role managed none.
  */
-export const roleBounds = (role: number): Bounds | null =>
-  boundsOf(SITE_POINTS, (p, lng) => p.role === role && lng > MAINLAND_WEST);
+export const roleBounds = (role: number | readonly number[]): Bounds | null => {
+  const roles = typeof role === "number" ? [role] : role;
+  return boundsOf(SITE_POINTS, (p, lng) => roles.includes(p.role) && lng > MAINLAND_WEST);
+};
 
-const byRole = new Map<number, SitePoints>();
+/** What the map is asked to show: one role, several (a system's), or every site (null). */
+export type Shown = number | readonly number[] | null;
+
+const byRoles = new Map<string, SitePoints>();
 
 /**
- * The sites the map shows: an open role's alone, so its clusters and counts
- * are its own. Every site when no role is open, or when the open role managed
- * none, so the map never goes blank.
+ * The sites the map shows: the shown roles' alone, so their clusters and
+ * counts are their own. Every site when nothing is shown, or when the shown
+ * roles managed none, so the map never goes blank.
  */
-export function pointsFor(role: number | null): SitePoints {
-  if (role === null) return SITE_POINTS;
-  let points = byRole.get(role);
+export function pointsFor(shown: Shown): SitePoints {
+  if (shown === null) return SITE_POINTS;
+  const roles = typeof shown === "number" ? [shown] : [...shown].sort((a, b) => a - b);
+  const key = roles.join(",");
+  let points = byRoles.get(key);
   if (!points) {
-    const features = SITE_POINTS.features.filter((f) => f.properties.role === role);
+    const features = SITE_POINTS.features.filter((f) => roles.includes(f.properties.role));
     points = features.length ? { type: "FeatureCollection", features } : SITE_POINTS;
-    byRole.set(role, points);
+    byRoles.set(key, points);
   }
   return points;
 }
@@ -254,7 +261,7 @@ export function marketsInside(markets: MarketPoints, cities: readonly string[]):
 const marketsByPoints = new Map<SitePoints, MarketPoints>();
 
 /** The markets for what `pointsFor(role)` shows. */
-export function marketsFor(role: number | null): MarketPoints {
+export function marketsFor(role: Shown): MarketPoints {
   const points = pointsFor(role);
   let markets = marketsByPoints.get(points);
   if (!markets) {

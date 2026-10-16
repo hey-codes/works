@@ -43,7 +43,7 @@ const at = (lng: number, lat: number, role: number | null) =>
     .map((f) => f.properties);
 
 test("sites with an opening come first, the newest opening year first", () => {
-  const ordered = orderSites([site({ id: 1 }), site({ id: 2, opening: "supported", openedYear: 2019 }), site({ id: 3, opening: "opened", openedYear: 2022 })]);
+  const ordered = orderSites([site({ id: 1 }), site({ id: 2, opening: "nso", openedYear: 2019 }), site({ id: 3, opening: "nso", openedYear: 2022 })]);
   assert.deepEqual(
     ordered.map((s) => s.id),
     [3, 2, 1],
@@ -51,7 +51,7 @@ test("sites with an opening come first, the newest opening year first", () => {
 });
 
 test("an opening with no year comes after the dated ones and before plain sites", () => {
-  const ordered = orderSites([site({ id: 1 }), site({ id: 2, opening: "supported" }), site({ id: 3, opening: "supported", openedYear: 2020 })]);
+  const ordered = orderSites([site({ id: 1 }), site({ id: 2, opening: "nso" }), site({ id: 3, opening: "nso", openedYear: 2020 })]);
   assert.deepEqual(
     ordered.map((s) => s.id),
     [3, 2, 1],
@@ -84,7 +84,7 @@ test("record ids rise in the records' order, so the id can stand for it", () => 
 
 test("sites at one point get one label: the lead's name and how many more", () => {
   const points = buildSitePoints(
-    [record({ id: 1, name: "Saks" }), record({ id: 2, name: "Lenox", opening: "supported", openedYear: 2022 }), record({ id: 3, name: "Midtown", lat: 33.78, lon: -84.38 })],
+    [record({ id: 1, name: "Saks" }), record({ id: 2, name: "Lenox", opening: "nso", openedYear: 2022 }), record({ id: 3, name: "Midtown", lat: 33.78, lon: -84.38 })],
     ["FENDI"],
   );
   assert.deepEqual(

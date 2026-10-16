@@ -57,9 +57,9 @@ test("a point carries what the site card shows, and nothing else", () => {
 });
 
 test("an estimated size and an opening status carry through", () => {
-  const points = buildSitePoints([site({ sqftEstimate: true, opening: "pre-opening", openedYear: 2021 })], ["FENDI"]);
+  const points = buildSitePoints([site({ sqftEstimate: true, opening: "construction", openedYear: 2021 })], ["FENDI"]);
   assert.equal(points.features[0]?.properties.sqftEstimate, true);
-  assert.equal(points.features[0]?.properties.opening, "pre-opening");
+  assert.equal(points.features[0]?.properties.opening, "construction");
   assert.equal(points.features[0]?.properties.openedYear, 2021);
 });
 
@@ -319,33 +319,30 @@ test("a site read back off the map gets its empty fields back as null", () => {
 });
 
 test("a site read back off the map keeps the fields it has", () => {
-  const read = readSiteProps({ id: 317, role: 4, name: "Brooklyn Service Center", type: "Service center", city: "New York", sqft: 30000, sqftEstimate: false, opening: "opened", openedYear: 2021 });
+  const read = readSiteProps({ id: 317, role: 4, name: "Brooklyn Service Center", type: "Service center", city: "New York", sqft: 30000, sqftEstimate: false, opening: "nso", openedYear: 2021 });
   assert.equal(read.sqft, 30000);
-  assert.equal(read.opening, "opened");
+  assert.equal(read.opening, "nso");
   assert.equal(read.openedYear, 2021);
 });
 
-test("an opening ranks opened 3, supported 2, pre-opening and in progress 1, none 0", () => {
-  assert.equal(openingRank("opened"), 3);
-  assert.equal(openingRank("supported"), 2);
-  assert.equal(openingRank("pre-opening"), 1);
-  assert.equal(openingRank("in-progress"), 1);
+test("every project type ranks alike, 1, and no project 0: one mark for them all", () => {
+  for (const type of ["nso", "construction", "relocation", "renovation"] as const) assert.equal(openingRank(type), 1);
   assert.equal(openingRank(null), 0);
 });
 
-test("a market carries the strongest opening tier among its sites", () => {
+test("a market with a project among its sites carries a tier, and wears the notch", () => {
   const points = buildSitePoints(
     [
-      site({ id: 1, city: "Austin", opening: "supported" }),
-      site({ id: 2, city: "Austin", opening: "opened" }),
+      site({ id: 1, city: "Austin", opening: "nso" }),
+      site({ id: 2, city: "Austin", opening: "nso" }),
       site({ id: 3, city: "Austin" }),
-      site({ id: 4, city: "Boston", opening: "pre-opening" }),
+      site({ id: 4, city: "Boston", opening: "construction" }),
       site({ id: 5, city: "Chicago" }),
     ],
     ["FENDI"],
   );
   const tiers = Object.fromEntries(buildMarkets(points, 1).features.map((f) => [f.properties.city, f.properties.tier]));
-  assert.deepEqual(tiers, { Austin: 3, Boston: 1, Chicago: 0 });
+  assert.deepEqual(tiers, { Austin: 1, Boston: 1, Chicago: 0 });
 });
 
 test("with a role open, its markets carry that role's tiers only", () => {
@@ -384,8 +381,8 @@ test("the caption's far link counts the captioned brand's own far sites, and non
 test("a market counts its opening sites, of every tier", () => {
   const points = buildSitePoints(
     [
-      site({ id: 1, city: "Austin", opening: "opened" }),
-      site({ id: 2, city: "Austin", opening: "pre-opening" }),
+      site({ id: 1, city: "Austin", opening: "nso" }),
+      site({ id: 2, city: "Austin", opening: "construction" }),
       site({ id: 3, city: "Austin" }),
       site({ id: 4, city: "Boston" }),
     ],

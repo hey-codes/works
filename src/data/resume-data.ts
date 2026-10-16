@@ -47,25 +47,29 @@ export const RESUME_DATA: ResumeData = {
   map: {
     title: "Every location",
     caption: "400+ sites · 9 brands · 2013 to 2026",
-    hint: "Hover a role or a dot to trace it",
+    // Cody, 2026-10-15: the pick model's two halves.
+    hint: "Hover a role to preview, click to keep it",
     hintNarrow: "Every site, 2013 to 2026",
     label: "Map of locations managed, 2013 to 2026",
     controls: { zoomIn: "Zoom in", zoomOut: "Zoom out", close: "Close popup" },
     hoverMore: "{name} +{n}",
     // Approved by Cody, 2026-10-15.
-    hoverOpenings: { one: "{n} opening", other: "{n} openings" },
+    hoverOpenings: { one: "{n} project", other: "{n} projects" },
+    // Cody, 2026-10-15: a static key to the red diamond, inside the map's frame.
+    legend: { nso: "NEW SITE OPENING", construction: "IN CONSTRUCTION", relocation: "RELOCATION", renovation: "RENOVATION" },
     card: {
       type: "TYPE",
       sqft: "SQ FT",
-      opening: "OPENING",
+      opening: "PROJECT",
       estimated: "Est.",
-      flags: { opened: "OPENED", supported: "SUPPORTED", "pre-opening": "PRE-OPENING", "in-progress": "IN PROGRESS" },
+      // Cody, 2026-10-15: one name per project type, replacing opened and supported.
+      flags: { nso: "NSO", construction: "IN CONSTRUCTION", relocation: "RELOCATION", renovation: "RENOVATION" },
       allSites: "All {n} sites",
       readRole: "Role ↓",
       sitesHere: "{n} sites here",
       // Approved by Cody, 2026-10-15.
       market: "MARKET",
-      chips: { flagship: "FLAGSHIP", office: "OFFICE", flexOffice: "FLEX OFFICE", newLocation: "NEW LOCATION", closed: "CLOSED" },
+      chips: { flagship: "FLAGSHIP", office: "OFFICE", flexOffice: "FLEX OFFICE", closed: "CLOSED" },
     },
     reset: "Show every site",
   },

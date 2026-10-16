@@ -9,4 +9,4 @@ pnpm install
 pnpm dev
 ```
 
-Design and product notes are in `docs/`. This repo replaces [hey-codes/cv](https://github.com/hey-codes/cv).
+Live at [codymitch.works](https://codymitch.works). Design and product notes, and the checklist of open items, are in `docs/`.

@@ -1,6 +1,6 @@
 import type * as GeoJSON from "geojson";
 import { RESUME_DATA } from "../data/resume-data.ts";
-import { pointsFor, type SitePoints, type SiteProps } from "./site-points.ts";
+import { pointsFor, type Shown, type SitePoints, type SiteProps } from "./site-points.ts";
 
 type Ordered = Pick<SiteProps, "id" | "opening" | "openedYear">;
 
@@ -92,7 +92,7 @@ export function spotPointsOf(points: SitePoints, ids: readonly number[]): number
 const labelsByPoints = new Map<SitePoints, SpotLabels>();
 
 /** The spot labels for what `pointsFor(role)` shows. */
-export function spotLabelsFor(role: number | null): SpotLabels {
+export function spotLabelsFor(role: Shown): SpotLabels {
   const points = pointsFor(role);
   let labels = labelsByPoints.get(points);
   if (!labels) {

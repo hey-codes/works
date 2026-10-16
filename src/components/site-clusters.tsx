@@ -54,13 +54,13 @@ export interface ClickedSpot {
   sites: readonly SiteProps[];
 }
 
-function readPalette(): Palette {
+export function readPalette(): Palette {
   const cs = getComputedStyle(document.documentElement);
   const v = (name: string) => cs.getPropertyValue(name).trim();
   return { ink: v("--ink"), muted: v("--muted"), blue: v("--blue"), red: v("--red"), bg: v("--bg") };
 }
 
-function readGround(): GroundPalette {
+export function readGround(): GroundPalette {
   const cs = getComputedStyle(document.documentElement);
   // A canvas hands any CSS color back as six-digit hex, which mixHex reads.
   const ctx = document.createElement("canvas").getContext("2d");

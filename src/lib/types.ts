@@ -121,13 +121,15 @@ export interface ResumeData {
     hoverMore: string;
     /** A hovered circle's opening sites, after its name ("Seattle +3 · 2 openings"): takes {n}. */
     hoverOpenings: { one: string; other: string };
+    /** The map's legend: each project type's name beside the red diamond. */
+    legend: Record<Opening, string>;
     /** The site card in a map popup. `allSites` and `sitesHere` take {n}. */
     card: {
       type: string;
       sqft: string;
       opening: string;
       estimated: string;
-      /** The opening flag, by Cody's part in it. */
+      /** The project flag, by its type. */
       flags: Record<Opening, string>;
       allSites: string;
       readRole: string;
@@ -136,7 +138,7 @@ export interface ResumeData {
       /** The market row's key. */
       market: string;
       /** Chips under a site's name; `closed` may take " · {year}" after it. */
-      chips: { flagship: string; office: string; flexOffice: string; newLocation: string; closed: string };
+      chips: { flagship: string; office: string; flexOffice: string; closed: string };
     };
     /** Control that returns the map to every site. */
     reset: string;
@@ -215,9 +217,10 @@ export interface Site {
 }
 
 /**
- * Cody's part in a site's opening: "opened" it was his role to open it;
- * "supported" he contributed to or managed parts of the opening; "pre-opening"
- * it was in progress during his tenure and opened after; "in-progress" an
- * opening he is running now.
+ * The project Cody had at a site (Cody, 2026-10-15): "nso" a new site
+ * opening; "construction" a site under construction on his watch that opened
+ * after he left; "relocation" a site moved to a new address; "renovation" a
+ * remodel of an operating site. The map marks them all alike; the card and
+ * the legend name the type.
  */
-export type Opening = "opened" | "supported" | "pre-opening" | "in-progress";
+export type Opening = "nso" | "construction" | "relocation" | "renovation";

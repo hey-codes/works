@@ -2,6 +2,7 @@
 
 import { Analytics } from "@vercel/analytics/next";
 import { OPT_OUT_KEY, optOutChoice } from "@/lib/analytics-opt-out";
+import { withRefPath } from "@/lib/analytics-ref";
 
 // Read on every event, so the visit that carries ?notrack is itself not
 // counted. If storage throws (a private window), only the URL decides.
@@ -16,6 +17,7 @@ function optedOut(): boolean {
 }
 
 // Vercel Web Analytics: page views and referrers in aggregate; no cookies, nothing personal.
+// An opted-out browser sends nothing; a ?ref link is counted under /ref/<source>.
 export function SiteAnalytics() {
-  return <Analytics beforeSend={(event) => (optedOut() ? null : event)} />;
+  return <Analytics beforeSend={(event) => (optedOut() ? null : { ...event, url: withRefPath(event.url) })} />;
 }

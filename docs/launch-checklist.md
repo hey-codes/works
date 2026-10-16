@@ -23,6 +23,7 @@
 ### Site
 
 - [ ] Own visits: `?notrack` opts a browser out of the counts, `?track` back in (`site-analytics.tsx`). Once live, Cody opens codymitch.works/?notrack once in each browser used (Mac and iPhone)
+- [ ] Tagged links: once `?ref` is live, the links Cody shares carry it (LinkedIn profile `?ref=linkedin`, the resume PDF `?ref=resume`, email signature `?ref=email`); each shows in the dashboard's Pages panel as `/ref/<source>`. History beyond the month: Export as CSV from the dashboard panels (Cody, 2026-10-15)
 - [ ] The map's framing keeps clear of Show every site and the zoom buttons but not of the legend (top right) or the Honolulu inset (bottom left), so either can sit over a few dots in some views; names under them are not drawn. Reserving room would shrink every fit (Cody accepted as is, 2026-10-15)
 - [ ] Check the page on a real iPhone: the Honolulu inset is a second live map (a second WebGL context)
 - [ ] MapLibre's dev bundles (about 5MB, `maplibre-gl-*-dev.mjs`) are emitted into the deploy though the site never loads them; trim them if the build allows

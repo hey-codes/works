@@ -1497,33 +1497,63 @@
 
 /* ---------- Footer ---------- */
 
-/* A bookend to the header (Cody, 2026-10-15): the wordmark and the two ways
-   to reach him on one line, then the colophon, quieter, under a hairline. */
+/* Three columns (Cody, 2026-10-29, F3): the wordmark over UPDATED and BUILT;
+   CONNECT; ASK AI. Under 768px the first spans the width and the other two
+   sit side by side under it. */
 .footer {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 24px 0 48px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 32px 40px;
+  padding: 32px 0 56px;
   border-top: 1px solid var(--line);
   font-size: 13px;
   color: var(--muted);
 }
 
-.footerSign {
+.footerCol {
   display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.footerMark {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.footerMeta {
+  display: inline-flex;
   flex-wrap: wrap;
   align-items: baseline;
-  justify-content: space-between;
-  gap: 8px 24px;
+  column-gap: 4px;
+  font-size: 11px;
+  line-height: 18px;
 }
 
-.footerOuts {
+.footerStack {
   display: flex;
-  gap: 20px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
 }
 
-/* LinkedIn and GitHub: the page's closing ask, blue with the out links' ↗,
-   the prose link's underline drawing in on hover. */
+/* Stacked 8px apart, LinkedIn's and GitHub's targets meet halfway rather
+   than reach 44px, so neither covers the other. */
+.footerStack .footerOut::before {
+  inset: -4px -6px;
+}
+
+/* LinkedIn and GitHub: blue with the out links' ↗, the prose link's
+   underline drawing in on hover. */
 .footerOut {
   composes: proseLink;
   position: relative;
@@ -1549,29 +1579,72 @@
   inset: -13px -6px;
 }
 
+/* UPDATED: the changelog's newest date, red at rest, on hover and on focus,
+   a dated exception to blue-is-interaction (Cody, 2026-10-29); the focus
+   ring stays blue. */
+.updatedLink {
+  color: var(--red);
+  text-decoration: none;
+  padding-bottom: 1px;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 100% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The global a:hover underline would double the 1px line drawn above. */
+.updatedLink:hover,
+.updatedLink:focus-visible {
+  text-decoration: none;
+}
+
+/* ASK AI: chip-sized links, squared, outlined in the edge tone; the border
+   turns blue with the pointer or focus. */
+.askTools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.askTool {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--blue);
+  text-decoration: none;
+  border: 1px solid var(--edge);
+  border-radius: var(--radius-control);
+  padding: 3px 8px;
+  white-space: nowrap;
+  transition: border-color 0.15s;
+}
+
+.askTool:hover,
+.askTool:focus-visible {
+  border-color: var(--blue);
+  text-decoration: none;
+}
+
+.askTool .outGlyph {
+  margin-left: 4px;
+}
+
+.askNote:empty {
+  display: none;
+}
+
+.askNote,
+.askReads {
+  font-size: 12px;
+}
+
 .printContact {
   display: none;
   gap: 8px;
   flex-wrap: wrap;
-}
-
-/* UPDATED, BUILT and TYPE in one quiet line: the key in SPEC's muted 11px
-   caps, the values muted 11px, each group kept whole where it can be. */
-.colophon {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 20px;
-  margin: 0;
-  padding-top: 12px;
-  border-top: 1px solid var(--line);
-  font-size: 11px;
-  line-height: 18px;
-}
-
-.colophonGroup {
-  display: inline-flex;
-  flex-wrap: wrap;
-  column-gap: 4px;
 }
 
 .colophonKey {
@@ -1596,6 +1669,16 @@
 .footerLink:focus-visible {
   color: var(--blue);
   background-size: 100% 1px, 100% 1px;
+}
+
+@media (max-width: 767.98px) {
+  .footer {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .footer > .footerCol:first-child {
+    grid-column: 1 / -1;
+  }
 }
 
 /* ---------- Breakpoints ---------- */
@@ -1852,6 +1935,12 @@
 @media print {
   .layout {
     display: block;
+  }
+
+  .footer {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
   }
 
   .printContact {

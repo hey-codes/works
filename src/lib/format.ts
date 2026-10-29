@@ -98,10 +98,6 @@ export function systemRoles(data: ResumeData, name: string): number[] {
   return out;
 }
 
-/** ISO date to "Sep 2026". */
-export const formatUpdated = (iso: string) =>
-  new Date(`${iso}T12:00`).toLocaleDateString("en-US", { month: "short", year: "numeric" });
-
 /** "https://www.linkedin.com/in/heycody/" to "linkedin.com/in/heycody". */
 export const bareUrl = (url: string) => url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
 

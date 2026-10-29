@@ -44,7 +44,25 @@ export const metadata: Metadata = {
     url: RESUME_DATA.personalWebsiteUrl,
     images: ["/og.png"],
   },
+  alternates: { canonical: "/" },
   twitter: { card: "summary_large_image" },
+};
+
+// Who the page is about, for search engines and AI agents. sameAs ties the
+// name to Cody's own profiles so he is not merged with another Cody Mitchell.
+const personSchema = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: RESUME_DATA.name,
+  jobTitle: RESUME_DATA.schema.jobTitle,
+  description: RESUME_DATA.schema.description,
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: RESUME_DATA.schema.addressLocality,
+    addressRegion: RESUME_DATA.schema.addressRegion,
+  },
+  url: RESUME_DATA.personalWebsiteUrl,
+  sameAs: RESUME_DATA.contact.social.map((s) => s.url),
 };
 
 // Runs before first paint so a saved theme never flashes. With nothing saved,
@@ -64,6 +82,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema).replace(/</g, "\\u003c") }}
+        />
       </head>
       <body>
         {children}

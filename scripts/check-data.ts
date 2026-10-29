@@ -2,6 +2,9 @@
 // Run: pnpm check:data
 import { LOCATIONS, LOCATIONS_ARE_PLACEHOLDER } from "../src/data/locations.ts";
 import { RESUME_DATA } from "../src/data/resume-data.ts";
+import { readFileSync } from "node:fs";
+import { latestEntryDate } from "../src/lib/changelog.ts";
+import { publicTextProblems } from "../src/lib/public-text.ts";
 import { SITE_POINTS } from "../src/lib/site-points.ts";
 
 // Private fields from the source records that must never reach this repo.
@@ -86,6 +89,24 @@ for (const w of RESUME_DATA.work) {
 // Every record reaches the map. A brand that matches no role would drop out silently.
 if (SITE_POINTS.features.length !== LOCATIONS.length) {
   errors.push(`map: ${SITE_POINTS.features.length} points built from ${LOCATIONS.length} location rows`);
+}
+
+// Public text files: the changelog carries no dollars and has a dated entry.
+const changelog = readFileSync(new URL("../public/changelog.md", import.meta.url), "utf8");
+for (const p of publicTextProblems(changelog, { dollars: false })) errors.push(`changelog: ${p}`);
+let changelogNewest = "";
+try {
+  changelogNewest = latestEntryDate(changelog);
+} catch (e) {
+  errors.push(`changelog: ${(e as Error).message}`);
+}
+
+// llms.txt, the profile the Ask AI links hand to an AI: dollars allowed
+// (Cody, 2026-10-29), dated the same day as the changelog's newest entry.
+const llms = readFileSync(new URL("../public/llms.txt", import.meta.url), "utf8");
+for (const p of publicTextProblems(llms, { dollars: true })) errors.push(`llms.txt: ${p}`);
+if (changelogNewest && !llms.includes(`Last updated: ${changelogNewest}`)) {
+  errors.push(`llms.txt: "Last updated: ${changelogNewest}" missing (the changelog's newest date)`);
 }
 
 console.log(`${LOCATIONS.length} sites, ${RESUME_DATA.work.length} roles, placeholder: ${LOCATIONS_ARE_PLACEHOLDER}`);

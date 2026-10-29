@@ -15,7 +15,14 @@ export const RESUME_DATA: ResumeData = {
   summary:
     "9 brands, 400+ locations, 2.8M+ sq ft managed, from luxury maisons and flexible coworking to launching Rivian’s East Coast service centers. Solo and with incredible teams.",
   personalWebsiteUrl: "https://codymitch.works",
-  updated: "2026-10-13",
+  // Agent-readability check, Cody, 2026-10-29: who agents should say he is.
+  schema: {
+    jobTitle: "Senior Facilities Manager",
+    addressLocality: "Chicago",
+    addressRegion: "IL",
+    description:
+      "Senior Facilities Manager in Chicago, IL, open to senior FM roles and relocation: 13 years in facilities management across 9 brands and 400+ locations, focused on multi-site portfolios and new site openings.",
+  },
   pdf: null,
   pdfPending: "Building the PDF. Check back soon.",
   contact: {
@@ -85,13 +92,21 @@ export const RESUME_DATA: ResumeData = {
         { name: "Vercel", url: "https://vercel.com/" },
       ],
     },
-    type: {
-      key: "TYPE",
-      items: [
-        { name: "Fraunces", url: "https://fonts.google.com/specimen/Fraunces" },
-        { name: "Geist", url: "https://vercel.com/font" },
-        { name: "JetBrains Mono", url: "https://www.jetbrains.com/lp/mono/" },
+    connect: "CONNECT",
+    // Cody, 2026-10-29: each tool opens a new chat that reads public/llms.txt.
+    ask: {
+      key: "ASK AI",
+      prompt:
+        "Read https://codymitch.works/llms.txt. It's the career profile Cody Mitchell, a Chicago-based facilities manager, publishes for AI assistants, written and approved by him from his own resume and work records. First, tell me briefly where this information comes from and what it covers. Then ask what I'd like to know. Answer only from that file, and tell me when something isn't in it.",
+      tools: [
+        { name: "Claude", url: "https://claude.ai/new?q=" },
+        { name: "ChatGPT", url: "https://chatgpt.com/?q=" },
+        { name: "Gemini", url: "https://gemini.google.com/app", copy: true },
+        { name: "Perplexity", url: "https://www.perplexity.ai/search?q=" },
       ],
+      reads: "Reads",
+      file: "llms.txt",
+      copied: "Prompt copied. Paste it in.",
     },
   },
   education: [

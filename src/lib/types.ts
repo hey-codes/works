@@ -82,6 +82,15 @@ export interface FooterCredits {
   items: ReadonlyArray<{ name: string; url: string }>;
 }
 
+/** An AI tool in the footer's ASK AI column. */
+export interface AskTool {
+  name: string;
+  /** Prefill tools end in their prompt parameter ("?q="); the prompt is appended. */
+  url: string;
+  /** Opens `url` as it is and copies the prompt instead (Gemini has no prefill). */
+  copy?: boolean;
+}
+
 export interface ResumeData {
   name: string;
   initials: string;
@@ -92,8 +101,13 @@ export interface ResumeData {
   about: string;
   summary: string;
   personalWebsiteUrl: string;
-  /** ISO date of the last content change; the footer shows it as "Mon YYYY". */
-  updated: string;
+  /** Person schema (JSON-LD) for search engines and AI agents; not shown on the page. */
+  schema: {
+    jobTitle: string;
+    addressLocality: string;
+    addressRegion: string;
+    description: string;
+  };
   /** Path or URL of the resume PDF. null hides the PDF link. */
   pdf: string | null;
   /** Note shown on the PDF control while `pdf` is null. */
@@ -145,12 +159,25 @@ export interface ResumeData {
   };
   /** The footer's key rows, in SPEC's style: UPDATED, then the credits. */
   footer: {
-    /** Key of the row that shows `updated`; the one row that prints. */
+    /** Key of the row that shows the changelog's newest date; the one row that prints. */
     updated: string;
     /** What the site is built with. */
     built: FooterCredits;
-    /** The three type families. */
-    type: FooterCredits;
+    /** Key over LinkedIn and GitHub. */
+    connect: string;
+    /** The ASK AI column: tools that open a chat reading llms.txt. */
+    ask: {
+      key: string;
+      /** Sent verbatim to every tool (Cody, 2026-10-29). */
+      prompt: string;
+      tools: ReadonlyArray<AskTool>;
+      /** "Reads", before the file's name. */
+      reads: string;
+      /** The profile's file name in public/, linked as /<file>. */
+      file: string;
+      /** Shown once a copy tool's prompt is on the clipboard. */
+      copied: string;
+    };
   };
   education: ReadonlyArray<{
     school: string;

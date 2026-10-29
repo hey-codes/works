@@ -10,3 +10,20 @@ export function optOutChoice(search: string): boolean | null {
   if (params.has("track")) return false;
   return null;
 }
+
+type OptOutStorage = Pick<Storage, "getItem" | "setItem" | "removeItem">;
+
+/**
+ * Whether this browser is opted out, recording a choice the URL makes. Read on
+ * every event, so the visit that carries ?notrack is itself not counted.
+ * Without storage, or storage that throws (a private window), only the URL decides.
+ */
+export function optedOut(search: string, storage: OptOutStorage | null): boolean {
+  const choice = optOutChoice(search);
+  try {
+    if (choice === true) storage?.setItem(OPT_OUT_KEY, "1");
+    else if (choice === false) storage?.removeItem(OPT_OUT_KEY);
+    else return storage?.getItem(OPT_OUT_KEY) === "1";
+  } catch {}
+  return choice === true;
+}

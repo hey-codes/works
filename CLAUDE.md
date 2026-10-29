@@ -17,6 +17,14 @@ only on Cody's go (`docs/launch-checklist.md` has the steps and the open items).
   `https://codymitch.works/?notrack`, so the visit stays out of Cody's Web
   Analytics. curl and WebFetch run no script and never count; local dev and
   previews never count.
+- **Every ship gets a changelog entry** (Cody, 2026-10-29). Before any push to
+  `main`, Claude drafts the entry for `public/changelog.md` in Cody's voice
+  (first person, short, one line a bullet) and asks Cody to pick: as written,
+  shorter, or his edit. It ships in the same commit, under a `## YYYY-MM-DD`
+  heading dated the day it goes live. Every ship counts, visible or not; a
+  commit that changes nothing served is not a ship. The newest heading is
+  the footer's UPDATED date and must match `Last updated:` in
+  `public/llms.txt` (`pnpm check:data` checks both).
 - **Kebab-case filenames**, except proper nouns, brands, acronyms and files a
   tool requires by name (`CLAUDE.md`, `README.md`).
 
@@ -30,7 +38,9 @@ only on Cody's go (`docs/launch-checklist.md` has the steps and the open items).
   managed, 9 Brands) and the five sections in order: 01 Highlights, 02
   Experience, 03 Education, 04 Capabilities, 05 Stack (Stack its own section,
   the page's one tools list, Cody, 2026-10-15).
-- **No dollar figures anywhere on the site** (Cody, 2026-10-14).
+- **No dollar figures anywhere on the site** (Cody, 2026-10-14), except
+  `public/llms.txt`, the profile the Ask AI links hand to an AI, which carries
+  the resume's figures (Cody, 2026-10-29).
 - **Site counts follow the map records**, not the resume, where they differ
   (Cody, 2026-10-14). `pnpm check:data` ties each role's count to its rows.
 - **Independent's four clients** appear on the map named and at their towns' centres,
@@ -42,7 +52,9 @@ only on Cody's go (`docs/launch-checklist.md` has the steps and the open items).
   as a circle's notch, the site card's PROJECT flag, and the legend's
   diamonds), and nothing else there is red (Cody, 2026-10-14 and 2026-10-15);
   an open role's rail, the pen lines under the hero name and an open role's
-  name, and the AWARD chips are red (Cody, 2026-10-15).
+  name, and the AWARD chips are red (Cody, 2026-10-15). One dated exception:
+  the footer's UPDATED date is a link and stays red at rest, on hover and on
+  focus; its focus ring is blue (Cody, 2026-10-29).
 - **Three families, three jobs:** Fraunces display, Geist prose, JetBrains Mono
   metadata and body default.
 - **No public email address anywhere** on the site or in this repo (Cody, 2026-10-13).
@@ -59,8 +71,11 @@ only on Cody's go (`docs/launch-checklist.md` has the steps and the open items).
 | `docs/DESIGN.md` | Visual system: tokens, type, patterns, motion, print |
 | `docs/locations-spec.md` | Contract for real location data |
 | `docs/launch-checklist.md` | Live state, how to ship an update (preview first, push only on Cody's go), open items |
+| `docs/claude-design-brief.md` | House rules to paste into Claude Design; keep in step with this file |
 | `src/app/globals.css` | Tokens as CSS variables, light and dark |
 | `src/data/resume-data.ts` | All content |
+| `public/llms.txt` | Cody's career profile for AI assistants, approved by Cody; the Ask AI links point AIs at it. Changes only when Cody asks |
+| `public/changelog.md` | What changed on the site, newest first, in Cody's voice; its newest date is UPDATED |
 | `src/data/locations.ts` | Map sites, from Cody's records. No source, address or contact fields, ever |
 | `content-inbox/` | Raw exports from other projects. Gitignored; never publish or copy private fields out of it |
 | `src/lib/types.ts` | Data types |

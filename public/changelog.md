@@ -5,6 +5,7 @@
 - New footer, in three columns. Font credits are gone.
 - Search engines and AI agents can now read who I am (profile data and a sitemap).
 - Updated the site's framework (Next.js) for a security fix.
+- Paused the Ask AI buttons while I rework them. My AI profile (llms.txt) is still linked.
 
 ## 2026-10-15
 - Launched: 9 roles, 400+ locations on the map.

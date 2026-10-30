@@ -23,8 +23,9 @@ only on Cody's go (`docs/launch-checklist.md` has the steps and the open items).
   shorter, or his edit. It ships in the same commit, under a `## YYYY-MM-DD`
   heading dated the day it goes live. Every ship counts, visible or not; a
   commit that changes nothing served is not a ship. The newest heading is
-  the footer's UPDATED date and must match `Last updated:` in
-  `public/llms.txt` (`pnpm check:data` checks both).
+  the footer's UPDATED date and the `Last updated:` of the generated `/llms.txt`
+  and `/llms-full.txt`
+  date, which both read it at build (`pnpm check:data` checks the changelog).
 - **Kebab-case filenames**, except proper nouns, brands, acronyms and files a
   tool requires by name (`CLAUDE.md`, `README.md`).
 
@@ -39,8 +40,8 @@ only on Cody's go (`docs/launch-checklist.md` has the steps and the open items).
   Experience, 03 Education, 04 Capabilities, 05 Stack (Stack its own section,
   the page's one tools list, Cody, 2026-10-15).
 - **No dollar figures anywhere on the site** (Cody, 2026-10-14), except
-  `public/llms.txt`, the profile the Ask AI links hand to an AI, which carries
-  the resume's figures (Cody, 2026-10-29).
+  `/llms-full.txt`, the profile the Ask AI links hand to an AI, whose words in
+  `src/data/llms-prose.ts` carry the resume's figures (Cody, 2026-10-29).
 - **Site counts follow the map records**, not the resume, where they differ
   (Cody, 2026-10-14). `pnpm check:data` ties each role's count to its rows.
 - **Independent's four clients** appear on the map named and at their towns' centres,
@@ -74,7 +75,7 @@ only on Cody's go (`docs/launch-checklist.md` has the steps and the open items).
 | `docs/claude-design-brief.md` | House rules to paste into Claude Design; keep in step with this file |
 | `src/app/globals.css` | Tokens as CSS variables, light and dark |
 | `src/data/resume-data.ts` | All content |
-| `public/llms.txt` | Cody's career profile for AI assistants, approved by Cody; the Ask AI links point AIs at it. Changes only when Cody asks |
+| `src/data/llms-prose.ts`, `src/lib/llms.ts` | Cody's career profile for AI assistants, rendered at build to `/llms-full.txt` from the site's data and this prose (v3, Cody, 2026-10-29): a recruiter brief, then a deep dive by role. `/llms.txt` is its short index in the llmstxt.org layout (summary, then links). Each new (v3) prose item carries a source tag; `pnpm llms:review` writes the tagged copy to `archive/`, and the served file never has the tags. The Ask AI links point AIs at it. The prose changes only when Cody asks; the numbers follow the data |
 | `public/changelog.md` | What changed on the site, newest first, in Cody's voice; its newest date is UPDATED |
 | `src/data/locations.ts` | Map sites, from Cody's records. No source, address or contact fields, ever |
 | `content-inbox/` | Raw exports from other projects. Gitignored; never publish or copy private fields out of it |
@@ -91,5 +92,6 @@ pnpm build        # static export to out/
 pnpm typecheck
 pnpm check:data   # locations and resume data agree
 pnpm test         # node --test over src/**/*.test.ts
+pnpm llms:review  # writes archive/llms-review.md: /llms-full.txt with [src: ...] tags, for Cody's read
 pnpm sync:worker  # re-copy MapLibre's worker after upgrading maplibre-gl
 ```

@@ -93,11 +93,12 @@ export const RESUME_DATA: ResumeData = {
       ],
     },
     connect: "CONNECT",
-    // Cody, 2026-10-29: each tool opens a new chat that reads public/llms.txt.
+    // Cody, 2026-10-29: each tool opens a new chat that reads /llms-full.txt (Version A,
+    // repointed when the profile split; Cody wants to test and revisit the prompt live).
     ask: {
       key: "ASK AI",
       prompt:
-        "Read https://codymitch.works/llms.txt. It's the career profile Cody Mitchell, a Chicago-based facilities manager, publishes for AI assistants, written and approved by him from his own resume and work records. First, tell me briefly where this information comes from and what it covers. Then ask what I'd like to know. Answer only from that file, and tell me when something isn't in it.",
+        "Read https://codymitch.works/llms-full.txt. It's the full version of an llms.txt file, a plain-text profile a website publishes for AI assistants; this one is Cody Mitchell's, a facilities manager, built from his personal source-of-truth knowledge base. Tell me briefly what the file is and what it covers, then ask what I'd like to know. Answer only from that file and say when something isn't in it. If I ask, paste the full profile back as a Markdown block.",
       tools: [
         { name: "Claude", url: "https://claude.ai/new?q=" },
         { name: "ChatGPT", url: "https://chatgpt.com/?q=" },
@@ -105,9 +106,13 @@ export const RESUME_DATA: ResumeData = {
         { name: "Perplexity", url: "https://www.perplexity.ai/search?q=" },
       ],
       reads: "Reads",
-      file: "llms.txt",
+      file: "llms-full.txt",
       copied: "Prompt copied. Paste it in.",
+      // Cody, 2026-10-29: paused while he reworks the prompt; flip to false to bring the buttons back.
+      paused: true,
     },
+    // Cody, 2026-10-29: shown in Ask AI's place while it is paused.
+    forAi: { key: "FOR AI", file: "llms.txt", note: "My profile for AI assistants" },
   },
   education: [
     {

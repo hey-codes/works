@@ -1,9 +1,11 @@
 // Consistency checks between resume-data.ts and locations.ts.
 // Run: pnpm check:data
 import { LOCATIONS, LOCATIONS_ARE_PLACEHOLDER } from "../src/data/locations.ts";
+import { LLMS_PROSE } from "../src/data/llms-prose.ts";
 import { RESUME_DATA } from "../src/data/resume-data.ts";
 import { readFileSync } from "node:fs";
 import { latestEntryDate } from "../src/lib/changelog.ts";
+import { LLMS_WORD_CAP, renderLlms, renderLlmsIndex, wordCount } from "../src/lib/llms.ts";
 import { publicTextProblems } from "../src/lib/public-text.ts";
 import { SITE_POINTS } from "../src/lib/site-points.ts";
 
@@ -101,15 +103,21 @@ try {
   errors.push(`changelog: ${(e as Error).message}`);
 }
 
-// llms.txt, the profile the Ask AI links hand to an AI: dollars allowed
-// (Cody, 2026-10-29), dated the same day as the changelog's newest entry.
-const llms = readFileSync(new URL("../public/llms.txt", import.meta.url), "utf8");
-for (const p of publicTextProblems(llms, { dollars: true })) errors.push(`llms.txt: ${p}`);
-if (changelogNewest && !llms.includes(`Last updated: ${changelogNewest}`)) {
-  errors.push(`llms.txt: "Last updated: ${changelogNewest}" missing (the changelog's newest date)`);
+// llms-full.txt, the profile the Ask AI links hand to an AI, rendered as the
+// build renders it, dated by the changelog: dollars allowed (Cody, 2026-10-29),
+// and no longer than the cap. llms.txt, its short index, carries no dollars.
+let llmsWords = 0;
+if (changelogNewest) {
+  const input = { resume: RESUME_DATA, sites: LOCATIONS, prose: LLMS_PROSE, updated: changelogNewest };
+  const full = renderLlms(input);
+  for (const p of publicTextProblems(full, { dollars: true })) errors.push(`llms-full.txt: ${p}`);
+  llmsWords = wordCount(full);
+  if (llmsWords > LLMS_WORD_CAP) errors.push(`llms-full.txt: ${llmsWords} words, over the ${LLMS_WORD_CAP} cap`);
+  for (const p of publicTextProblems(renderLlmsIndex(input), { dollars: false })) errors.push(`llms.txt: ${p}`);
 }
 
 console.log(`${LOCATIONS.length} sites, ${RESUME_DATA.work.length} roles, placeholder: ${LOCATIONS_ARE_PLACEHOLDER}`);
+console.log(`llms-full.txt: ${llmsWords} words`);
 if (errors.length) {
   for (const e of errors) console.error(`  x ${e}`);
   process.exit(1);

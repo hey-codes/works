@@ -177,7 +177,11 @@ export interface ResumeData {
       file: string;
       /** Shown once a copy tool's prompt is on the clipboard. */
       copied: string;
+      /** true hides the column; the footer shows `forAi` in its place. */
+      paused: boolean;
     };
+    /** The third column while Ask AI is paused: a plain link to the AI profile. */
+    forAi: { key: string; file: string; note: string };
   };
   education: ReadonlyArray<{
     school: string;
@@ -251,3 +255,60 @@ export interface Site {
  * the legend name the type.
  */
 export type Opening = "nso" | "construction" | "relocation" | "renovation";
+
+/**
+ * The hand-written words of the AI profile (/llms.txt): everything the site's
+ * data does not hold. Rendered by src/lib/llms.ts; dollars allowed here only.
+ */
+export interface Sourced {
+  text: string;
+  /** Where the line comes from: "<profile> <entry ID or section>"; shown only in the review render. */
+  src: string;
+}
+
+export interface LlmsProse {
+  about: string;
+  /** Rules for the AI reading the file, one bullet each. */
+  forAi: readonly string[];
+  lookingFor: {
+    level: string;
+    roleTypes: readonly string[];
+    /** job-hunt's fit-tag sectors, each with the roles behind it. */
+    sectors: ReadonlyArray<{ name: string; roles: readonly Brand[] }>;
+  };
+  /** The openings, as the page and og-resume count them, after the map's count. */
+  openings: readonly string[];
+  /** Why Cody: the strongest claims, one bullet each. */
+  whyCody: readonly Sourced[];
+  quickAnswers: ReadonlyArray<{ q: string; a: string; src: string }>;
+  results: ReadonlyArray<{ role: Brand; text: string }>;
+  /** Scale and spend, one line per role. */
+  scale: ReadonlyArray<{ role: Brand; text: string; src: string }>;
+  /** Per role: TEAM (og-resume Part 4), a SITES override, the intro and bullets, and the v3 card lines. */
+  roles: Readonly<
+    Record<
+      Brand,
+      {
+        team?: string;
+        sites?: string;
+        intro: string;
+        bullets: readonly string[];
+        proves?: Sourced;
+        before?: Sourced;
+        after?: Sourced;
+        reliedOn?: Sourced;
+        openings?: Sourced;
+        quotes?: readonly Sourced[];
+      }
+    >
+  >;
+  skillProof: ReadonlyArray<{ skill: string; proof: string; src: string }>;
+  cmmsRollouts: string;
+  /** The short /llms.txt index (llmstxt.org format) that points at /llms-full.txt (Cody, 2026-10-29). */
+  index: { intro: string; full: string; site: string; changelog: string; linkedin: string };
+  askAbout: readonly Sourced[];
+  recognition: readonly Sourced[];
+  origin: readonly Sourced[];
+  personal: Sourced;
+  accuracyNotes: readonly Sourced[];
+}

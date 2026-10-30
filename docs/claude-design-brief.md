@@ -17,7 +17,7 @@ The code is the source of truth (Next.js, plain CSS variables in `src/app/global
 - **Career facts and copy.** Every word comes from `src/data/resume-data.ts`. Do not rewrite, shorten or reword any text, number or name to make a layout work. If you think wording should change, list it separately as a suggestion.
 - **The four stat figures:** 13 Years in FM, 400+ Locations, 2.8M+ Sq ft managed, 9 Brands.
 - **Five sections, in this order:** 01 Highlights, 02 Experience, 03 Education, 04 Capabilities, 05 Stack.
-- **No dollar figures** anywhere on the page. (`public/llms.txt`, the profile for AI assistants, is the one file that carries them; Cody, 2026-10-29.)
+- **No dollar figures** anywhere on the page. (`/llms-full.txt`, the profile for AI assistants, is the one file that carries them, from `src/data/llms-prose.ts`; Cody, 2026-10-29.)
 - **No email address** anywhere.
 - **No marginalia** (the old red-pen notes are retired).
 

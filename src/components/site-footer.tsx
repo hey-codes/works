@@ -8,7 +8,8 @@ import { OutIcon } from "./icons";
 /**
  * The page's sign-off in three columns (Cody, 2026-10-29, F3): the wordmark
  * with its red cursor over UPDATED and BUILT; CONNECT, LinkedIn and GitHub;
- * ASK AI, the tools that open a chat reading llms.txt. UPDATED is the
+ * ASK AI, the tools that open a chat reading the AI profile, or while it is
+ * paused, FOR AI and a link to llms.txt (Cody, 2026-10-29). UPDATED is the
  * changelog's newest date, in red, and opens the changelog. Print keeps
  * UPDATED and the contact line.
  */
@@ -58,8 +59,20 @@ export function SiteFooter() {
         </span>
       </div>
       <div className={styles.footerCol} data-noprint="">
-        <span className={styles.label}>{footer.ask.key}</span>
-        <AskAiLinks />
+        {footer.ask.paused ? (
+          <>
+            <span className={styles.label}>{footer.forAi.key}</span>
+            <a href={`/${footer.forAi.file}`} className={styles.footerLink}>
+              {footer.forAi.file}
+            </a>
+            <span className={styles.askReads}>{footer.forAi.note}</span>
+          </>
+        ) : (
+          <>
+            <span className={styles.label}>{footer.ask.key}</span>
+            <AskAiLinks />
+          </>
+        )}
       </div>
       <span className={styles.printContact}>
         {bareUrl(RESUME_DATA.personalWebsiteUrl)} · {bareUrl(linkedin)}

@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit",
     "check:data": "node --experimental-strip-types scripts/check-data.ts",
     "test": "node --experimental-strip-types --test \"src/**/*.test.ts\"",
+    "llms:review": "node --experimental-strip-types scripts/llms-review.ts",
     "sync:worker": "cp node_modules/maplibre-gl/dist/maplibre-gl-worker.mjs node_modules/maplibre-gl/dist/maplibre-gl-shared.mjs public/"
   },
   "dependencies": {

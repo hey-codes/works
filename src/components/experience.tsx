@@ -175,7 +175,7 @@ function RoleRecord({ role, index }: { role: Role; index: number }) {
                       <dd>{[sqft, `${role.sites}\u00a0${role.countWord ?? siteWord(role.sites)}`].filter(Boolean).join("\u00a0· ")}</dd>
                     </div>
                   ) : null}
-                  <div className={styles.specItem}>
+                  <div className={`${styles.specItem} ${styles.specWide}`}>
                     <dt>BASE</dt>
                     <dd>{role.location}</dd>
                   </div>
